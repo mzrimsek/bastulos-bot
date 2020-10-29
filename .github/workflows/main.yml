@@ -15,7 +15,7 @@ jobs:
         uses: docker/build-push-action@v1
         with:
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          repository: mzrimsek/twitch-bastulos-bot/bastulos-bot
+          password: ${{ secrets.REGISTRY_TOKEN }}
+          registry: ghcr.io
+          repository: mzrimsek/twitch-bastulos-bot
           tag_with_ref: true
