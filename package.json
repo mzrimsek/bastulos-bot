@@ -1,0 +1,21 @@
+{
+  "name": "bastulos-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "forever": "forever index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "obs-websocket-js": "^4.0.2",
+    "tmi.js": "^1.5.0"
+  },
+  "devDependencies": {
+    "forever": "^3.0.2",
+    "nodemon": "^2.0.4"
+  }
+}
