@@ -1,3 +1,6 @@
+const channelKeys = Object.keys(process.env).filter(key => key.match(/TWITCH_CHANNEL_\d/g));
+const channels = channelKeys.map(key => process.env[key]);
+
 const config = {
   options: {
     debug: true
@@ -9,7 +12,7 @@ const config = {
     username: 'bastulosbot',
     password: `oauth:${process.env.TMI_TOKEN}`
   },
-  channels: ['bastulos']
+  channels
 };
 
 module.exports = config;
