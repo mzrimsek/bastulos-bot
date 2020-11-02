@@ -56,6 +56,13 @@ discordClient.on('ready', () => {
   logger.info(`Logged in as: ${discordClient.user.tag} - (${discordClient.user.id})`);
 });
 
+const clients = {
+  twitchClient,
+  obsClient,
+  firestore,
+  discordClient
+};
+
 let commandsActive = true;
 
 twitchClient.on('chat', async (channel, userInfo, message, self) => {
@@ -70,13 +77,13 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
   try {
     if (userInfo.username === ADMIN_USER) {
-      handleAdminCommand(messageParts, obsClient, firestore, printFunc, commandsActive, commandsActiveUpdateFunc);
+      handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients);
     }
 
     if (!commandsActive) return;
 
-    handleUserCommand(messageParts, username, firestore, printFunc);
-    handleOBSCommand(messageParts, obsClient);
+    handleUserCommand(messageParts, username, printFunc, clients);
+    handleOBSCommand(messageParts, clients);
   } catch (error) {
     logger.error(error);
   }
@@ -96,7 +103,7 @@ discordClient.on('message', async message => {
   const printFunc = content => message.channel.send(content);
 
   try {
-    handleUserCommand(messageParts, username, firestore, printFunc);
+    handleUserCommand(messageParts, username, printFunc, clients);
   } catch (error) {
     logger.error(error);
   }

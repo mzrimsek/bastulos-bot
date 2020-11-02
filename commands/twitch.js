@@ -1,11 +1,13 @@
 const obsConfig = require('../config/obs');
 
 const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS } = require('../constants/commands');
+const { COMMANDS_COLLECTION } = require('../constants/firebase');
 const { SOURCES } = require('../constants/obs');
 
 const { getRandomColor } = require('../utils');
 
-async function handleOBSCommand(messageParts, obsClient) {
+async function handleOBSCommand(messageParts, clients) {
+  const { obsClient } = clients;
   const command = messageParts[0].toLowerCase();
 
   switch (command) {
@@ -75,7 +77,8 @@ async function handleOBSCommand(messageParts, obsClient) {
   }
 }
 
-function handleAdminCommand(messageParts, obsClient, firestore, printFunc, commandsActive, commandsActiveUpdateFunc) {
+function handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients) {
+  const { obsClient, firestore } = clients;
   const command = messageParts[0].toLowerCase();
 
   switch (command) {

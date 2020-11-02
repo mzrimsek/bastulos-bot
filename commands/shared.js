@@ -9,7 +9,8 @@ async function loadUserCommands(firestore) {
   return commandsSnapshot.docs.map(doc => doc.data());
 }
 
-async function handleUserCommand(messageParts, username, firestore, printFunc) {
+async function handleUserCommand(messageParts, username, printFunc, clients) {
+  const { firestore } = clients;
   const userCommands = await loadUserCommands(firestore);
 
   const command = messageParts[0].toLowerCase();
