@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const tmi = require('tmi.js');
 const OBSWebSocket = require('obs-websocket-js');
+const admin = require('firebase-admin');
 const logger = require('winston');
 
 logger.remove(logger.transports.Console);
@@ -10,31 +11,64 @@ logger.level = 'debug';
 
 const tmiConfig = require('./config/tmi');
 const obsConfig = require('./config/obs');
+const firebaseConfig = require('./config/firebase');
 
 const { COMMAND_PREFACE, ADMIN_USER, ADMIN_COMMANDS, OBS_COMMANDS, USER_COMMANDS } = require('./constants/commands');
 const { SOURCES } = require('./constants/obs');
 
 const { getRandomColor } = require('./utils');
 
+// init twitch client
 const client = new tmi.client(tmiConfig);
 client.connect();
 
+// init obs client
 const obs = new OBSWebSocket();
 
-let active = true;
+// init firebase client
+admin.initializeApp({
+  credential: admin.credential.cert(firebaseConfig.service_account),
+  databaseURL: firebaseConfig.database_url
+});
+const firestoreSettings = {
+  timestampsInSnapshots: true
+};
+
+let firestore = null;
+let userCommands = null;
+try {
+  firestore = admin.firestore();
+  firestore.settings(firestoreSettings);
+  logger.info('Connection to Firebase established');
+
+  loadUserCommands().then(commands => {
+    userCommands = commands;
+    console.log(userCommands);
+    logger.info('User commands loaded');
+  });
+} catch {
+  logger.info('Failed to connect to Firebase');
+}
+
+async function loadUserCommands() {
+  const commandsSnapshot = await firestore.collection('commands').get();
+  return commandsSnapshot.docs.map(doc => doc.data());
+}
+
+let commandsActive = true;
 
 function handleAdminCommand(channel, messageParts) {
   const command = messageParts[0];
 
   switch (command) {
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.TOGGLE_COMMANDS_ACTIVE}`: {
-      if (active) {
+      if (commandsActive) {
         const message = 'Bot commands are disabled!';
 
         client.say(channel, message);
         logger.info(message);
 
-        active = false;
+        commandsActive = false;
       }
       else {
         const message = 'Bot commands are enabled!';
@@ -42,7 +76,7 @@ function handleAdminCommand(channel, messageParts) {
         client.say(channel, message);
         logger.info(message);
 
-        active = true;
+        commandsActive = true;
       }
       break;
     }
@@ -165,7 +199,7 @@ client.on('chat', async (channel, userInfo, message, self) => {
       handleAdminCommand(channel, messageParts);
     }
 
-    if (!active) return;
+    if (!commandsActive) return;
 
     handleUserCommand(channel, userInfo, messageParts);
     handleOBSCommand(messageParts);
