@@ -8,4 +8,4 @@ RUN npm install
 
 COPY . /usr/src/bot
 
-CMD ["npm", "run", "forever"]
+CMD ["node", "run", "start"]
