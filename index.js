@@ -1,17 +1,19 @@
 require('dotenv').config();
 
-const tmi = require('tmi.js');
-const OBSWebSocket = require('obs-websocket-js');
-const admin = require('firebase-admin');
 const logger = require('winston');
-
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, { colorize: true });
 logger.level = 'debug';
 
+const tmi = require('tmi.js');
+const OBSWebSocket = require('obs-websocket-js');
+const admin = require('firebase-admin');
+const discord = require('discord.js');
+
 const tmiConfig = require('./config/tmi');
 const obsConfig = require('./config/obs');
 const firebaseConfig = require('./config/firebase');
+const discordConfig = require('./config/discord');
 
 const { COMMAND_PREFACE, ADMIN_USER, ADMIN_COMMANDS, OBS_COMMANDS, HELP_COMMAND } = require('./constants/commands');
 const { SOURCES } = require('./constants/obs');
@@ -35,6 +37,7 @@ const firestoreSettings = {
   timestampsInSnapshots: true
 };
 
+// init connection to firestore
 let firestore = null;
 try {
   firestore = admin.firestore();
@@ -43,6 +46,10 @@ try {
 } catch {
   logger.info('Failed to connect to Firebase');
 }
+
+// init discord client
+const bot = new discord.Client();
+bot.login(discordConfig.token);
 
 async function loadUserCommands() {
   const commandsSnapshot = await firestore.collection(COMMANDS_COLLECTION).get();
