@@ -2,76 +2,124 @@ require('dotenv').config();
 
 const tmi = require('tmi.js');
 const OBSWebSocket = require('obs-websocket-js');
+const admin = require('firebase-admin');
+const logger = require('winston');
+
+logger.remove(logger.transports.Console);
+logger.add(logger.transports.Console, { colorize: true });
+logger.level = 'debug';
 
 const tmiConfig = require('./config/tmi');
 const obsConfig = require('./config/obs');
+const firebaseConfig = require('./config/firebase');
 
+const { COMMAND_PREFACE, ADMIN_USER, ADMIN_COMMANDS, OBS_COMMANDS, HELP_COMMAND } = require('./constants/commands');
+const { SOURCES } = require('./constants/obs');
+const { COMMANDS_COLLECTION } = require('./constants/firebase');
+
+const { getRandomColor, replaceRequestingUserInMessage } = require('./utils');
+
+// init twitch client
 const client = new tmi.client(tmiConfig);
+client.connect();
+
+// init obs client
 const obs = new OBSWebSocket();
 
-client.connect();
-obs.connect(obsConfig);
-
-const COMMAND_PREFACE = '!';
-const ADMIN_USER = 'bastulos';
-const ADMIN_COMMANDS = {
-  TOGGLE_COMMANDS_ACTIVE: 'active',
-  RECONNECT_OBS: 'obs'
-};
-const COMMANDS = {
-  COMMAND_LIST: 'help',
-  RESET: 'reset',
-  TOGGLE_CAM: 'cam',
-  TOGGLE_MUTE_MIC: 'mic',
-  CHANGE_OVERLAY_COLOR: 'color',
-  TOGGLE_AQUA: 'aqua',
-  HELLO: 'hello',
-  HEART: 'heart'
-};
-const SOURCES = {
-  WEBCAM: 'Webcam',
-  MIC: 'Desktop Mic',
-  AQUA: 'Aqua'
+// init firebase client
+admin.initializeApp({
+  credential: admin.credential.cert(firebaseConfig.service_account),
+  databaseURL: firebaseConfig.database_url
+});
+const firestoreSettings = {
+  timestampsInSnapshots: true
 };
 
-let active = true;
+let firestore = null;
+try {
+  firestore = admin.firestore();
+  firestore.settings(firestoreSettings);
+  logger.info('Connection to Firebase established');
+} catch {
+  logger.info('Failed to connect to Firebase');
+}
 
-client.on('chat', async (channel, userInfo, message, self) => {
-  if (self) return; // ignore messages from the bot 
+async function loadUserCommands() {
+  const commandsSnapshot = await firestore.collection(COMMANDS_COLLECTION).get();
+  logger.info('User commands loaded');
+  return commandsSnapshot.docs.map(doc => doc.data());
+}
 
-  if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
+let commandsActive = true;
 
-  const normalizedMessage = message.toLowerCase();
-  const messageParts = normalizedMessage.split(' ');
-  const command = messageParts[0];
-
-  if (userInfo.username === ADMIN_USER) {
-    switch (command) {
-      case `${COMMAND_PREFACE}${ADMIN_COMMANDS.TOGGLE_COMMANDS_ACTIVE}`: {
-        if (active) {
-          client.say(channel, `Bot commands are disabled!`);
-          active = false;
-        }
-        else {
-          client.say(channel, `Bot commands are enabled!`);
-          active = true;
-        }
-        break;
-      }
-      case `${COMMAND_PREFACE}${ADMIN_COMMANDS.RECONNECT_OBS}`: {
-        obs.connect(obsConfig);
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-  }
-
-  if (!active) return;
+function handleAdminCommand(channel, messageParts) {
+  const command = messageParts[0].toLowerCase();
 
   switch (command) {
-    case `${COMMAND_PREFACE}${COMMANDS.RESET}`: {
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.TOGGLE_COMMANDS_ACTIVE}`: {
+      if (commandsActive) {
+        client.say(channel, 'Bot commands are disabled!');
+        commandsActive = false;
+      }
+      else {
+        client.say(channel, 'Bot commands are enabled!');
+        commandsActive = true;
+      }
+      break;
+    }
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.RECONNECT_OBS}`: {
+      obs.connect(obsConfig).then(() => logger.info('Connected to OBSWebSocket'));
+      break;
+    }
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.ADD_COMMAND}`: {
+      const newCommand = messageParts[1];
+      const newMessage = messageParts.slice(2).join(' ');
+      firestore.collection(COMMANDS_COLLECTION).doc(newCommand).set({
+        command: newCommand,
+        message: newMessage
+      }).then(() => logger.info(`Command added: ${newCommand}`));
+      break;
+    }
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.REMOVE_COMMAND}`: {
+      const commandToRemove = messageParts[1];
+      firestore.collection(COMMANDS_COLLECTION).doc(commandToRemove).delete().then(() => logger.info(`Command removed: ${commandToRemove}`));
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+};
+
+async function handleUserCommand(channel, userInfo, messageParts) {
+  const userCommands = await loadUserCommands();
+
+  const command = messageParts[0].toLowerCase();
+
+  if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
+    const obsCommandKeys = Object.keys(OBS_COMMANDS);
+    const obsCommandList = obsCommandKeys.map(commandKey => OBS_COMMANDS[commandKey]);
+    const userCommandList = userCommands.map(userCommand => userCommand.command);
+    const allCommandList = [...userCommandList, ...obsCommandList, HELP_COMMAND];
+
+    const helpMessageList = allCommandList.map(command => `${COMMAND_PREFACE}${command}`).join(', ');
+    client.say(channel, `Here are the available commands: \n${helpMessageList}`);
+  } else {
+    const foundCommand = userCommands.find(x => `${COMMAND_PREFACE}${x.command}` === command);
+
+    if (foundCommand) {
+      logger.info(`Found command: ${foundCommand.command}`);
+      const replacedCommand = replaceRequestingUserInMessage(userInfo.username, foundCommand.message);
+      client.say(channel, replacedCommand);
+    }
+  }
+}
+
+async function handleOBSCommand(messageParts) {
+  const command = messageParts[0].toLowerCase();
+
+  switch (command) {
+    case `${COMMAND_PREFACE}${OBS_COMMANDS.RESET}`: {
       obs.send('SetSourceFilterVisibility', {
         sourceName: SOURCES.WEBCAM,
         filterName: 'Color Correction',
@@ -81,28 +129,17 @@ client.on('chat', async (channel, userInfo, message, self) => {
       obs.send('SetMute', { source: SOURCES.MIC, mute: false });
       break;
     }
-    case `${COMMAND_PREFACE}${COMMANDS.HEART}`:
-    case `${COMMAND_PREFACE}${COMMANDS.HELLO}`: {
-      client.say(channel, `@${userInfo.username}, may your heart be your guiding key`);
-      break;
-    }
-    case `${COMMAND_PREFACE}${COMMANDS.COMMAND_LIST}`: {
-      const commands = Object.keys(COMMANDS);
-      const commandList = commands.map(commandKey => `${COMMAND_PREFACE}${COMMANDS[commandKey]}`).join(', ');
-      client.say(channel, `Here are the available commands: \n${commandList}`);
-      break;
-    }
-    case `${COMMAND_PREFACE}${COMMANDS.TOGGLE_CAM}`: {
+    case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_CAM}`: {
       const properties = await obs.send('GetSceneItemProperties', { item: { name: SOURCES.WEBCAM } });
       const { visible } = properties;
       obs.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: !visible });
       break;
     }
-    case `${COMMAND_PREFACE}${COMMANDS.TOGGLE_MUTE_MIC}`: {
+    case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_MUTE_MIC}`: {
       obs.send('ToggleMute', { source: SOURCES.MIC });
       break;
     }
-    case `${COMMAND_PREFACE}${COMMANDS.CHANGE_OVERLAY_COLOR}`: {
+    case `${COMMAND_PREFACE}${OBS_COMMANDS.CHANGE_OVERLAY_COLOR}`: {
       let numTimes = messageParts[1] ? parseInt(messageParts[1]) : 1;
 
       if (numTimes < 0) {
@@ -119,7 +156,7 @@ client.on('chat', async (channel, userInfo, message, self) => {
         filterEnabled: true
       });
 
-      const setColorCorrectionToRandomColor = () => {
+      function setColorCorrectionToRandomColor() {
         const randomColor = getRandomColor();
         obs.send('SetSourceFilterSettings', {
           sourceName: SOURCES.WEBCAM,
@@ -134,10 +171,9 @@ client.on('chat', async (channel, userInfo, message, self) => {
       for (let i = 0; i < numTimes; i++) {
         setTimeout(setColorCorrectionToRandomColor, rate * i);
       }
-
       break;
     }
-    case `${COMMAND_PREFACE}${COMMANDS.TOGGLE_AQUA}`: {
+    case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_AQUA}`: {
       const properties = await obs.send('GetSceneItemProperties', { item: { name: SOURCES.AQUA } });
       const { visible } = properties;
       obs.send('SetSceneItemRender', { source: SOURCES.AQUA, render: !visible });
@@ -147,8 +183,25 @@ client.on('chat', async (channel, userInfo, message, self) => {
       break;
     }
   }
-});
-
-function getRandomColor() {
-  return (Math.random() * 4294967296) >>> 0;
 }
+
+client.on('chat', async (channel, userInfo, message, self) => {
+  if (self) return; // ignore messages from the bot 
+
+  if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
+
+  const messageParts = message.split(' ');
+
+  try {
+    if (userInfo.username === ADMIN_USER) {
+      handleAdminCommand(channel, messageParts);
+    }
+
+    if (!commandsActive) return;
+
+    handleUserCommand(channel, userInfo, messageParts);
+    handleOBSCommand(messageParts);
+  } catch (error) {
+    logger.error(error);
+  }
+});
