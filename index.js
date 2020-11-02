@@ -22,8 +22,8 @@ const { COMMANDS_COLLECTION } = require('./constants/firebase');
 const { getRandomColor, replaceRequestingUserInMessage } = require('./utils');
 
 // init twitch client
-const client = new tmi.client(tmiConfig);
-client.connect();
+const twitchClient = new tmi.client(tmiConfig);
+twitchClient.connect();
 
 // init obs client
 const obs = new OBSWebSocket();
@@ -48,8 +48,14 @@ try {
 }
 
 // init discord client
-const bot = new discord.Client();
-bot.login(discordConfig.token);
+const discordClient = new discord.Client();
+discordClient.login(discordConfig.token);
+
+// init connection to discord server
+discordClient.on('ready', () => {
+  logger.info('Connected to Discord');
+  logger.info(`Logged in as: ${discordClient.user.tag} - (${discordClient.user.id})`);
+});
 
 async function loadUserCommands() {
   const commandsSnapshot = await firestore.collection(COMMANDS_COLLECTION).get();
@@ -65,11 +71,11 @@ function handleAdminCommand(channel, messageParts) {
   switch (command) {
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.TOGGLE_COMMANDS_ACTIVE}`: {
       if (commandsActive) {
-        client.say(channel, 'Bot commands are disabled!');
+        twitchClient.say(channel, 'Bot commands are disabled!');
         commandsActive = false;
       }
       else {
-        client.say(channel, 'Bot commands are enabled!');
+        twitchClient.say(channel, 'Bot commands are enabled!');
         commandsActive = true;
       }
       break;
@@ -98,7 +104,7 @@ function handleAdminCommand(channel, messageParts) {
   }
 };
 
-async function handleUserCommand(channel, userInfo, messageParts) {
+async function handleUserCommand(messageParts, username, printFunc) {
   const userCommands = await loadUserCommands();
 
   const command = messageParts[0].toLowerCase();
@@ -110,14 +116,14 @@ async function handleUserCommand(channel, userInfo, messageParts) {
     const allCommandList = [...userCommandList, ...obsCommandList, HELP_COMMAND];
 
     const helpMessageList = allCommandList.map(command => `${COMMAND_PREFACE}${command}`).join(', ');
-    client.say(channel, `Here are the available commands: \n${helpMessageList}`);
+    printFunc(`Here are the available commands: \n${helpMessageList}`);
   } else {
     const foundCommand = userCommands.find(x => `${COMMAND_PREFACE}${x.command}` === command);
 
     if (foundCommand) {
       logger.info(`Found command: ${foundCommand.command}`);
-      const replacedCommand = replaceRequestingUserInMessage(userInfo.username, foundCommand.message);
-      client.say(channel, replacedCommand);
+      const replacedCommand = replaceRequestingUserInMessage(username, foundCommand.message);
+      printFunc(replacedCommand);
     }
   }
 }
@@ -192,12 +198,13 @@ async function handleOBSCommand(messageParts) {
   }
 }
 
-client.on('chat', async (channel, userInfo, message, self) => {
+twitchClient.on('chat', async (channel, userInfo, message, self) => {
   if (self) return; // ignore messages from the bot 
 
   if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
   const messageParts = message.split(' ');
+  const printFunc = content => twitchClient.say(channel, content);
 
   try {
     if (userInfo.username === ADMIN_USER) {
@@ -206,8 +213,29 @@ client.on('chat', async (channel, userInfo, message, self) => {
 
     if (!commandsActive) return;
 
-    handleUserCommand(channel, userInfo, messageParts);
+    handleUserCommand(messageParts, userInfo.username, printFunc);
     handleOBSCommand(messageParts);
+  } catch (error) {
+    logger.error(error);
+  }
+});
+
+
+
+discordClient.on('message', async message => {
+  const member = await message.guild.fetchMember(message.author);
+  const isBastulosBot = member.id === discordConfig.bot_user_id;
+  const { content } = message;
+
+  if (isBastulosBot) return; // ignore messages from the bot
+
+  if (content[0] !== COMMAND_PREFACE) return; // ignore non command messages
+
+  const messageParts = content.split(' ');
+  const printFunc = content => message.channel.send(content);
+
+  try {
+    handleUserCommand(messageParts, member.user.username, printFunc);
   } catch (error) {
     logger.error(error);
   }
