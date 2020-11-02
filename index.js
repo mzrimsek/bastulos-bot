@@ -15,6 +15,7 @@ const firebaseConfig = require('./config/firebase');
 
 const { COMMAND_PREFACE, ADMIN_USER, ADMIN_COMMANDS, OBS_COMMANDS, HELP_COMMAND } = require('./constants/commands');
 const { SOURCES } = require('./constants/obs');
+const { COMMANDS_COLLECTION } = require('./constants/firebase');
 
 const { getRandomColor, replaceRequestingUserInMessage } = require('./utils');
 
@@ -44,7 +45,7 @@ try {
 }
 
 async function loadUserCommands() {
-  const commandsSnapshot = await firestore.collection('commands').get();
+  const commandsSnapshot = await firestore.collection(COMMANDS_COLLECTION).get();
   logger.info('User commands loaded');
   return commandsSnapshot.docs.map(doc => doc.data());
 }
@@ -52,30 +53,36 @@ async function loadUserCommands() {
 let commandsActive = true;
 
 function handleAdminCommand(channel, messageParts) {
-  const command = messageParts[0];
+  const command = messageParts[0].toLowerCase();
 
   switch (command) {
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.TOGGLE_COMMANDS_ACTIVE}`: {
       if (commandsActive) {
-        const message = 'Bot commands are disabled!';
-
-        client.say(channel, message);
-        logger.info(message);
-
+        client.say(channel, 'Bot commands are disabled!');
         commandsActive = false;
       }
       else {
-        const message = 'Bot commands are enabled!';
-
-        client.say(channel, message);
-        logger.info(message);
-
+        client.say(channel, 'Bot commands are enabled!');
         commandsActive = true;
       }
       break;
     }
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.RECONNECT_OBS}`: {
       obs.connect(obsConfig).then(() => logger.info('Connected to OBSWebSocket'));
+      break;
+    }
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.ADD_COMMAND}`: {
+      const newCommand = messageParts[1];
+      const newMessage = messageParts.slice(2).join(' ');
+      firestore.collection(COMMANDS_COLLECTION).doc(newCommand).set({
+        command: newCommand,
+        message: newMessage
+      }).then(() => logger.info(`Command added: ${newCommand}`));
+      break;
+    }
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.REMOVE_COMMAND}`: {
+      const commandToRemove = messageParts[1];
+      firestore.collection(COMMANDS_COLLECTION).doc(commandToRemove).delete().then(() => logger.info(`Command removed: ${commandToRemove}`));
       break;
     }
     default: {
@@ -87,7 +94,7 @@ function handleAdminCommand(channel, messageParts) {
 async function handleUserCommand(channel, userInfo, messageParts) {
   const userCommands = await loadUserCommands();
 
-  const command = messageParts[0];
+  const command = messageParts[0].toLowerCase();
 
   if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
     const obsCommandKeys = Object.keys(OBS_COMMANDS);
@@ -104,14 +111,12 @@ async function handleUserCommand(channel, userInfo, messageParts) {
       logger.info(`Found command: ${foundCommand.command}`);
       const replacedCommand = replaceRequestingUserInMessage(userInfo.username, foundCommand.message);
       client.say(channel, replacedCommand);
-    } else {
-      logger.info('No user command found');
     }
   }
 }
 
 async function handleOBSCommand(messageParts) {
-  const command = messageParts[0];
+  const command = messageParts[0].toLowerCase();
 
   switch (command) {
     case `${COMMAND_PREFACE}${OBS_COMMANDS.RESET}`: {
@@ -186,8 +191,7 @@ client.on('chat', async (channel, userInfo, message, self) => {
 
   if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
-  const normalizedMessage = message.toLowerCase();
-  const messageParts = normalizedMessage.split(' ');
+  const messageParts = message.split(' ');
 
   try {
     if (userInfo.username === ADMIN_USER) {

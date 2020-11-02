@@ -4,7 +4,9 @@ const ADMIN_USER = 'bastulos';
 
 const ADMIN_COMMANDS = {
   TOGGLE_COMMANDS_ACTIVE: 'active',
-  RECONNECT_OBS: 'obs'
+  RECONNECT_OBS: 'obs',
+  ADD_COMMAND: 'add',
+  REMOVE_COMMAND: 'rm'
 };
 
 const OBS_COMMANDS = {
