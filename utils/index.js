@@ -3,7 +3,7 @@ function getRandomColor() {
 }
 
 function replaceRequestingUserInMessage(username, command) {
-  return command.replace('{user}', username);
+  return command.replace('{user}', '@' + username);
 }
 
 module.exports = {
