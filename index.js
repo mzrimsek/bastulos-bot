@@ -204,6 +204,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
   if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
   const messageParts = message.split(' ');
+  const username = `@${userInfo.username}`;
   const printFunc = content => twitchClient.say(channel, content);
 
   try {
@@ -213,7 +214,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
     if (!commandsActive) return;
 
-    handleUserCommand(messageParts, userInfo.username, printFunc);
+    handleUserCommand(messageParts, username, printFunc);
     handleOBSCommand(messageParts);
   } catch (error) {
     logger.error(error);
@@ -232,10 +233,11 @@ discordClient.on('message', async message => {
   if (content[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
   const messageParts = content.split(' ');
+  const username = `<@!${member.user.id}>`;
   const printFunc = content => message.channel.send(content);
 
   try {
-    handleUserCommand(messageParts, member.user.username, printFunc);
+    handleUserCommand(messageParts, username, printFunc);
   } catch (error) {
     logger.error(error);
   }
