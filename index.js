@@ -86,7 +86,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
     const userCommands = await loadUserCommands(firestore);
 
     handleHelpCommand(messageParts, printFunc, userCommands, OBS_COMMANDS);
-    handleUserCommand(messageParts, username, printFunc);
+    handleUserCommand(messageParts, username, printFunc, userCommands);
     handleOBSCommand(messageParts, clients);
   } catch (error) {
     logger.error(error);
@@ -110,7 +110,7 @@ discordClient.on('message', async message => {
     const userCommands = await loadUserCommands(firestore);
 
     handleHelpCommand(messageParts, printFunc, userCommands);
-    handleUserCommand(messageParts, username, printFunc, clients);
+    handleUserCommand(messageParts, username, printFunc, userCommands);
   } catch (error) {
     logger.error(error);
   }

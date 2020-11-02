@@ -1,4 +1,4 @@
-const { COMMAND_PREFACE, OBS_COMMANDS, HELP_COMMAND } = require('../constants/commands');
+const { COMMAND_PREFACE, HELP_COMMAND } = require('../constants/commands');
 
 const { replaceRequestingUserInMessage } = require('../utils');
 
@@ -17,10 +17,11 @@ function handleHelpCommand(messageParts, printFunc, userCommands, ...extraComman
   const command = messageParts[0].toLowerCase();
 
   if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
-    const extraCommandsList = extraCommandsDefinitions.flatMap(extraCommandsDefinition => {
+    const extraCommandsLists = extraCommandsDefinitions.map(extraCommandsDefinition => {
       const extraCommandKeys = Object.keys(extraCommandsDefinition);
       return extraCommandKeys.map(commandKey => extraCommandsDefinition[commandKey]);
     });
+    const extraCommandsList = [].concat(...extraCommandsLists);
 
     const userCommandList = userCommands.map(userCommand => userCommand.command);
     const allCommandList = [...userCommandList, ...extraCommandsList, HELP_COMMAND];
@@ -32,6 +33,5 @@ function handleHelpCommand(messageParts, printFunc, userCommands, ...extraComman
 
 module.exports = {
   handleUserCommand,
-  handleHelpCommand,
-  loadUserCommands
+  handleHelpCommand
 };
