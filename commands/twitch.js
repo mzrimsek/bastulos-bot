@@ -1,5 +1,8 @@
-const { COMMAND_PREFACE, OBS_COMMANDS } = require('../constants/commands');
+const obsConfig = require('../config/obs');
+
+const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS } = require('../constants/commands');
 const { SOURCES } = require('../constants/obs');
+
 const { getRandomColor } = require('../utils');
 
 async function handleOBSCommand(messageParts, obsClient) {
@@ -72,6 +75,46 @@ async function handleOBSCommand(messageParts, obsClient) {
   }
 }
 
+function handleAdminCommand(messageParts, obsClient, firestore, printFunc, commandsActive, commandsActiveUpdateFunc) {
+  const command = messageParts[0].toLowerCase();
+
+  switch (command) {
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.TOGGLE_COMMANDS_ACTIVE}`: {
+      if (commandsActive) {
+        printFunc('Bot commands are disabled!');
+        commandsActiveUpdateFunc(false);
+      }
+      else {
+        printFunc('Bot commands are enabled!');
+        commandsActiveUpdateFunc(true);
+      }
+      break;
+    }
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.RECONNECT_OBS}`: {
+      obsClient.connect(obsConfig).then(() => logger.info('Connected to OBSWebSocket'));
+      break;
+    }
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.ADD_COMMAND}`: {
+      const newCommand = messageParts[1];
+      const newMessage = messageParts.slice(2).join(' ');
+      firestore.collection(COMMANDS_COLLECTION).doc(newCommand).set({
+        command: newCommand,
+        message: newMessage
+      }).then(() => logger.info(`Command added: ${newCommand}`));
+      break;
+    }
+    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.REMOVE_COMMAND}`: {
+      const commandToRemove = messageParts[1];
+      firestore.collection(COMMANDS_COLLECTION).doc(commandToRemove).delete().then(() => logger.info(`Command removed: ${commandToRemove}`));
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+};
+
 module.exports = {
-  handleOBSCommand
+  handleOBSCommand,
+  handleAdminCommand
 };
