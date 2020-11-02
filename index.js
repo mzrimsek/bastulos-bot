@@ -171,7 +171,6 @@ async function handleOBSCommand(messageParts) {
       for (let i = 0; i < numTimes; i++) {
         setTimeout(setColorCorrectionToRandomColor, rate * i);
       }
-
       break;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_AQUA}`: {
