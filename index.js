@@ -16,17 +16,17 @@ const firebaseConfig = require('./config/firebase');
 const discordConfig = require('./config/discord');
 
 const { COMMAND_PREFACE, ADMIN_USER, ADMIN_COMMANDS, OBS_COMMANDS, HELP_COMMAND } = require('./constants/commands');
-const { SOURCES } = require('./constants/obs');
 const { COMMANDS_COLLECTION } = require('./constants/firebase');
 
-const { getRandomColor, replaceRequestingUserInMessage } = require('./utils');
+const { replaceRequestingUserInMessage } = require('./utils');
+const { handleOBSCommand } = require('./commands/twitch');
 
 // init twitch client
 const twitchClient = new tmi.client(tmiConfig);
 twitchClient.connect();
 
 // init obs client
-const obs = new OBSWebSocket();
+const obsClient = new OBSWebSocket();
 
 // init firebase client
 admin.initializeApp({
@@ -81,7 +81,7 @@ function handleAdminCommand(channel, messageParts) {
       break;
     }
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.RECONNECT_OBS}`: {
-      obs.connect(obsConfig).then(() => logger.info('Connected to OBSWebSocket'));
+      obsClient.connect(obsConfig).then(() => logger.info('Connected to OBSWebSocket'));
       break;
     }
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.ADD_COMMAND}`: {
@@ -128,76 +128,6 @@ async function handleUserCommand(messageParts, username, printFunc) {
   }
 }
 
-async function handleOBSCommand(messageParts) {
-  const command = messageParts[0].toLowerCase();
-
-  switch (command) {
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.RESET}`: {
-      obs.send('SetSourceFilterVisibility', {
-        sourceName: SOURCES.WEBCAM,
-        filterName: 'Color Correction',
-        filterEnabled: false
-      });
-      obs.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: true });
-      obs.send('SetMute', { source: SOURCES.MIC, mute: false });
-      break;
-    }
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_CAM}`: {
-      const properties = await obs.send('GetSceneItemProperties', { item: { name: SOURCES.WEBCAM } });
-      const { visible } = properties;
-      obs.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: !visible });
-      break;
-    }
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_MUTE_MIC}`: {
-      obs.send('ToggleMute', { source: SOURCES.MIC });
-      break;
-    }
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.CHANGE_OVERLAY_COLOR}`: {
-      let numTimes = messageParts[1] ? parseInt(messageParts[1]) : 1;
-
-      if (numTimes < 0) {
-        numTimes = Math.abs(numTimes);
-      }
-
-      if (numTimes > 1000) {
-        numTimes = 1000;
-      }
-
-      obs.send('SetSourceFilterVisibility', {
-        sourceName: SOURCES.WEBCAM,
-        filterName: 'Color Correction',
-        filterEnabled: true
-      });
-
-      function setColorCorrectionToRandomColor() {
-        const randomColor = getRandomColor();
-        obs.send('SetSourceFilterSettings', {
-          sourceName: SOURCES.WEBCAM,
-          filterName: 'Color Correction',
-          filterSettings: {
-            color: randomColor
-          }
-        });
-      };
-
-      const rate = 1000 / numTimes;
-      for (let i = 0; i < numTimes; i++) {
-        setTimeout(setColorCorrectionToRandomColor, rate * i);
-      }
-      break;
-    }
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_AQUA}`: {
-      const properties = await obs.send('GetSceneItemProperties', { item: { name: SOURCES.AQUA } });
-      const { visible } = properties;
-      obs.send('SetSceneItemRender', { source: SOURCES.AQUA, render: !visible });
-      break;
-    }
-    default: {
-      break;
-    }
-  }
-}
-
 twitchClient.on('chat', async (channel, userInfo, message, self) => {
   if (self) return; // ignore messages from the bot 
 
@@ -215,13 +145,11 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
     if (!commandsActive) return;
 
     handleUserCommand(messageParts, username, printFunc);
-    handleOBSCommand(messageParts);
+    handleOBSCommand(messageParts, obsClient);
   } catch (error) {
     logger.error(error);
   }
 });
-
-
 
 discordClient.on('message', async message => {
   const member = await message.guild.fetchMember(message.author);
