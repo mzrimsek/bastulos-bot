@@ -15,10 +15,11 @@ const tmiConfig = require('./config/tmi');
 const firebaseConfig = require('./config/firebase');
 const discordConfig = require('./config/discord');
 
-const { COMMAND_PREFACE, ADMIN_USER } = require('./constants/commands');
+const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS } = require('./constants/commands');
 
 const { handleAdminCommand, handleOBSCommand } = require('./commands/twitch');
-const { handleUserCommand } = require('./commands/shared');
+const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
+const { loadUserCommands } = require('./utils');
 
 // init twitch client
 const twitchClient = new tmi.client(tmiConfig);
@@ -82,7 +83,10 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
     if (!commandsActive) return;
 
-    handleUserCommand(messageParts, username, printFunc, clients);
+    const userCommands = await loadUserCommands(firestore);
+
+    handleHelpCommand(messageParts, printFunc, userCommands, OBS_COMMANDS);
+    handleUserCommand(messageParts, username, printFunc);
     handleOBSCommand(messageParts, clients);
   } catch (error) {
     logger.error(error);
@@ -103,6 +107,9 @@ discordClient.on('message', async message => {
   const printFunc = content => message.channel.send(content);
 
   try {
+    const userCommands = await loadUserCommands(firestore);
+
+    handleHelpCommand(messageParts, printFunc, userCommands);
     handleUserCommand(messageParts, username, printFunc, clients);
   } catch (error) {
     logger.error(error);
