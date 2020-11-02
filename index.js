@@ -13,10 +13,10 @@ const tmiConfig = require('./config/tmi');
 const obsConfig = require('./config/obs');
 const firebaseConfig = require('./config/firebase');
 
-const { COMMAND_PREFACE, ADMIN_USER, ADMIN_COMMANDS, OBS_COMMANDS, USER_COMMANDS } = require('./constants/commands');
+const { COMMAND_PREFACE, ADMIN_USER, ADMIN_COMMANDS, OBS_COMMANDS, HELP_COMMAND } = require('./constants/commands');
 const { SOURCES } = require('./constants/obs');
 
-const { getRandomColor } = require('./utils');
+const { getRandomColor, replaceRequestingUserInMessage } = require('./utils');
 
 // init twitch client
 const client = new tmi.client(tmiConfig);
@@ -35,23 +35,17 @@ const firestoreSettings = {
 };
 
 let firestore = null;
-let userCommands = null;
 try {
   firestore = admin.firestore();
   firestore.settings(firestoreSettings);
   logger.info('Connection to Firebase established');
-
-  loadUserCommands().then(commands => {
-    userCommands = commands;
-    console.log(userCommands);
-    logger.info('User commands loaded');
-  });
 } catch {
   logger.info('Failed to connect to Firebase');
 }
 
 async function loadUserCommands() {
   const commandsSnapshot = await firestore.collection('commands').get();
+  logger.info('User commands loaded');
   return commandsSnapshot.docs.map(doc => doc.data());
 }
 
@@ -90,27 +84,28 @@ function handleAdminCommand(channel, messageParts) {
   }
 };
 
-function handleUserCommand(channel, userInfo, messageParts) {
+async function handleUserCommand(channel, userInfo, messageParts) {
+  const userCommands = await loadUserCommands();
+
   const command = messageParts[0];
 
-  switch (command) {
-    case `${COMMAND_PREFACE}${USER_COMMANDS.HEART}`:
-    case `${COMMAND_PREFACE}${USER_COMMANDS.HELLO}`: {
-      client.say(channel, `@${userInfo.username}, may your heart be your guiding key`);
-      break;
-    }
-    case `${COMMAND_PREFACE}${USER_COMMANDS.COMMAND_LIST}`: {
-      const allCommands = {
-        ...OBS_COMMANDS,
-        ...USER_COMMANDS
-      };
-      const commands = Object.keys(allCommands);
-      const commandList = commands.map(commandKey => `${COMMAND_PREFACE}${allCommands[commandKey]}`).join(', ');
-      client.say(channel, `Here are the available commands: \n${commandList}`);
-      break;
-    }
-    default: {
-      break;
+  if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
+    const obsCommandKeys = Object.keys(OBS_COMMANDS);
+    const obsCommandList = obsCommandKeys.map(commandKey => OBS_COMMANDS[commandKey]);
+    const userCommandList = userCommands.map(userCommand => userCommand.command);
+    const allCommandList = [...userCommandList, ...obsCommandList, HELP_COMMAND];
+
+    const helpMessageList = allCommandList.map(command => `${COMMAND_PREFACE}${command}`).join(', ');
+    client.say(channel, `Here are the available commands: \n${helpMessageList}`);
+  } else {
+    const foundCommand = userCommands.find(x => `${COMMAND_PREFACE}${x.command}` === command);
+
+    if (foundCommand) {
+      logger.info(`Found command: ${foundCommand.command}`);
+      const replacedCommand = replaceRequestingUserInMessage(userInfo.username, foundCommand.message);
+      client.say(channel, replacedCommand);
+    } else {
+      logger.info('No user command found');
     }
   }
 }

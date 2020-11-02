@@ -15,16 +15,12 @@ const OBS_COMMANDS = {
   TOGGLE_AQUA: 'aqua'
 };
 
-const USER_COMMANDS = {
-  COMMAND_LIST: 'help',
-  HELLO: 'hello',
-  HEART: 'heart'
-};
+const HELP_COMMAND = 'help';
 
 module.exports = {
   COMMAND_PREFACE,
   ADMIN_USER,
   ADMIN_COMMANDS,
   OBS_COMMANDS,
-  USER_COMMANDS
+  HELP_COMMAND
 };
