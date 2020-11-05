@@ -5,8 +5,9 @@ services:
     image: ghcr.io/mzrimsek/bastulos-bot:latest
     container_name: bastulos_bot
     environment:
+      - TWITCH_CHANNEL_1=bastulos
       - OBS_URL=${OBS_URL}
-      - OBS_PASSWORD=${1000}
+      - OBS_PASSWORD=${OBS_PASSWORD}
       - TMI_TOKEN=${TMI_TOKEN}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
       - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
@@ -17,5 +18,4 @@ services:
       - FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - DISCORD_BOT_USER_ID=${DISCORD_BOT_USER_ID}
-      - TWITCH_CHANNEL_1=bastulos
     restart: unless-stopped
