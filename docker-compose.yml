@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  bastulos_bot:
+  bot:
     image: ghcr.io/mzrimsek/bastulos-bot:latest
     container_name: bastulos_bot
     environment:
