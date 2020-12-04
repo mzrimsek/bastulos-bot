@@ -1,5 +1,7 @@
 FROM node:14
 
+LABEL org.opencontainers.image.source https://github.com/mzrimsek/bastulos-bot
+
 RUN mkdir -p /usr/src/bot
 WORKDIR /usr/src/bot
 
