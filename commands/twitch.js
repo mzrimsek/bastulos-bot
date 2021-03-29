@@ -85,10 +85,12 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.TOGGLE_COMMANDS_ACTIVE}`: {
       if (commandsActive) {
         printFunc('Bot commands are disabled!');
+        logger.info('Twitch commands are disabled');
         commandsActiveUpdateFunc(false);
       }
       else {
         printFunc('Bot commands are enabled!');
+        logger.info('Twitch commands are enabled');
         commandsActiveUpdateFunc(true);
       }
       break;
