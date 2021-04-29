@@ -17,7 +17,7 @@ const discordConfig = require('./config/discord');
 
 const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS } = require('./constants/commands');
 
-const { handleAdminCommand, handleOBSCommand } = require('./commands/twitch');
+const { handleAdminCommand, handleOBSCommand, handleModCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
 const { loadUserCommands } = require('./utils');
 
@@ -79,6 +79,10 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
   try {
     if (userInfo.username === ADMIN_USER) {
       handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients);
+    }
+
+    if (userInfo.username === ADMIN_USER || userInfo.mod) {
+      await handleModCommand(messageParts, printFunc, clients);
     }
 
     if (!commandsActive) return;
