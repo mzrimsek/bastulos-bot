@@ -17,7 +17,7 @@ const discordConfig = require('./config/discord');
 
 const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS } = require('./constants/commands');
 
-const { handleAdminCommand, handleOBSCommand, handleModCommand } = require('./commands/twitch');
+const { handleAdminCommand, handleOBSCommand, handleModCommand, handleTwitchUserCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
 const { loadUserCommands } = require('./utils');
 
@@ -92,6 +92,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
     handleHelpCommand(messageParts, printFunc, userCommands, OBS_COMMANDS);
     handleUserCommand(messageParts, username, printFunc, userCommands);
     handleOBSCommand(messageParts, clients);
+    handleTwitchUserCommand(messageParts, username, printFunc, clients);
   } catch (error) {
     logger.error(error);
   }

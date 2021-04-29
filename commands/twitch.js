@@ -7,7 +7,7 @@ const { SOURCES } = require('../constants/obs');
 const { getRandomColor, loadTrackingWords } = require('../utils');
 
 async function handleOBSCommand(messageParts, clients) {
-  const { obsClient } = clients;
+  const { obsClient, firestore } = clients;
   const command = messageParts[0].toLowerCase();
 
   switch (command) {
@@ -119,6 +119,30 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
   }
 };
 
+async function handleTwitchUserCommand(messageParts, username, printFunc, clients) {
+  const { firestore } = clients;
+  const command = messageParts[0].toLowerCase();
+
+  const trackingWords = await loadTrackingWords(clients.firestore);
+
+  switch (command) {
+    case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.GET_COUNT}`: {
+      const targetWord = messageParts[1];
+      if (trackingWords.includes(targetWord)) {
+        const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(targetWord);
+        const document = await documentRef.get();
+        const currentCount = document.get('count');
+        printFunc(`${username}, ${targetWord} count is ${currentCount}`);
+      } else {
+        printFunc(`${username}, ${targetWord} is not being tracked`);
+      }
+    }
+    default: {
+      break;
+    }
+  }
+}
+
 async function handleModCommand(messageParts, printFunc, clients) {
   const { firestore } = clients;
   const command = messageParts[0].toLowerCase();
@@ -167,5 +191,6 @@ async function handleModCommand(messageParts, printFunc, clients) {
 module.exports = {
   handleOBSCommand,
   handleAdminCommand,
-  handleModCommand
+  handleModCommand,
+  handleTwitchUserCommand
 };
