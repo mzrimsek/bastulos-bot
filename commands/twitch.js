@@ -1,13 +1,13 @@
 const obsConfig = require('../config/obs');
 
-const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS } = require('../constants/commands');
-const { COMMANDS_COLLECTION } = require('../constants/firebase');
+const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS } = require('../constants/commands');
+const { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } = require('../constants/firebase');
 const { SOURCES } = require('../constants/obs');
 
-const { getRandomColor } = require('../utils');
+const { getRandomColor, loadTrackingWords } = require('../utils');
 
 async function handleOBSCommand(messageParts, clients) {
-  const { obsClient } = clients;
+  const { obsClient, firestore } = clients;
   const command = messageParts[0].toLowerCase();
 
   switch (command) {
@@ -119,7 +119,78 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
   }
 };
 
+async function handleTwitchUserCommand(messageParts, username, printFunc, clients) {
+  const { firestore } = clients;
+  const command = messageParts[0].toLowerCase();
+
+  const trackingWords = await loadTrackingWords(clients.firestore);
+
+  switch (command) {
+    case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.GET_COUNT}`: {
+      const targetWord = messageParts[1];
+      if (trackingWords.includes(targetWord)) {
+        const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(targetWord);
+        const document = await documentRef.get();
+        const currentCount = document.get('count');
+        printFunc(`${username}, ${targetWord} count is ${currentCount}`);
+      } else {
+        printFunc(`${username}, ${targetWord} is not being tracked`);
+      }
+    }
+    default: {
+      break;
+    }
+  }
+}
+
+async function handleModCommand(messageParts, printFunc, clients) {
+  const { firestore } = clients;
+  const command = messageParts[0].toLowerCase();
+
+  const trackingWords = await loadTrackingWords(clients.firestore);
+
+  switch (command) {
+    case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.ADD_WORD}`: {
+      const newWord = messageParts[1];
+      if (!trackingWords.includes(newWord)) {
+        firestore.collection(WORD_TRACKING_COLLECTION).doc(newWord).set({
+          count: 0
+        }).then(() => logger.info(`Tracking word added: ${newWord}`));
+      }
+      break;
+    }
+    case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.REMOVE_WORD}`: {
+      const wordToRemove = messageParts[1];
+      if (trackingWords.includes(wordToRemove)) {
+        firestore.collection(WORD_TRACKING_COLLECTION).doc(wordToRemove).delete().then(() => logger.info(`Tracking word removed: ${wordToRemove}`));
+      }
+      break;
+    }
+    case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.CLEAR_WORD_COUNT}`: {
+      const wordToClear = messageParts[1];
+      if (trackingWords.includes(wordToClear)) {
+        firestore.collection(WORD_TRACKING_COLLECTION).doc(wordToClear).update('count', 0).then(() => logger.info(`Tracking word cleared: ${wordToClear}`));
+      }
+      break;
+    }
+    case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.INCREMENT_WORD_COUNT}`: {
+      const wordToIncrement = messageParts[1];
+      if (trackingWords.includes(wordToIncrement)) {
+        const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(wordToIncrement);
+        const document = await documentRef.get();
+        const currentCount = document.get('count');
+        documentRef.update('count', currentCount + 1).then(() => logger.info(`Tracking word incremented: ${wordToIncrement}`));
+      }
+    }
+    default: {
+      break;
+    }
+  }
+}
+
 module.exports = {
   handleOBSCommand,
-  handleAdminCommand
+  handleAdminCommand,
+  handleModCommand,
+  handleTwitchUserCommand
 };

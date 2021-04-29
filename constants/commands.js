@@ -6,7 +6,7 @@ const ADMIN_COMMANDS = {
   TOGGLE_COMMANDS_ACTIVE: 'active',
   RECONNECT_OBS: 'obs',
   ADD_COMMAND: 'add',
-  REMOVE_COMMAND: 'rm'
+  REMOVE_COMMAND: 'rm',
 };
 
 const OBS_COMMANDS = {
@@ -17,6 +17,14 @@ const OBS_COMMANDS = {
   TOGGLE_AQUA: 'aqua'
 };
 
+const WORD_TRACKING_COMMANDS = {
+  ADD_WORD: 'addw',
+  REMOVE_WORD: 'rmw',
+  CLEAR_WORD_COUNT: 'clrw',
+  INCREMENT_WORD_COUNT: 'incw',
+  GET_COUNT: 'wordcount'
+};
+
 const HELP_COMMAND = 'help';
 
 module.exports = {
@@ -24,5 +32,6 @@ module.exports = {
   ADMIN_USER,
   ADMIN_COMMANDS,
   OBS_COMMANDS,
-  HELP_COMMAND
+  HELP_COMMAND,
+  WORD_TRACKING_COMMANDS
 };
