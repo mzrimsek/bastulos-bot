@@ -4,10 +4,10 @@ const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS } 
 const { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } = require('../constants/firebase');
 const { SOURCES } = require('../constants/obs');
 
-const { getRandomColor, loadTrackingWords } = require('../utils');
+const { getRandomColor, loadTrackingPhrases } = require('../utils');
 
 async function handleOBSCommand(messageParts, clients) {
-  const { obsClient, firestore } = clients;
+  const { obsClient } = clients;
   const command = messageParts[0].toLowerCase();
 
   switch (command) {
@@ -123,18 +123,16 @@ async function handleTwitchUserCommand(messageParts, username, printFunc, client
   const { firestore } = clients;
   const command = messageParts[0].toLowerCase();
 
-  const trackingWords = await loadTrackingWords(clients.firestore);
+  const trackingPhrases = await loadTrackingPhrases(clients.firestore);
 
   switch (command) {
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.GET_COUNT}`: {
-      const targetWord = messageParts[1];
-      if (trackingWords.includes(targetWord)) {
-        const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(targetWord);
+      const targetPhrase = messageParts.slice(1).join('_');
+      if (targetPhrase && trackingPhrases.includes(targetPhrase)) {
+        const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(targetPhrase);
         const document = await documentRef.get();
         const currentCount = document.get('count');
-        printFunc(`${username}, ${targetWord} count is ${currentCount}`);
-      } else {
-        printFunc(`${username}, ${targetWord} is not being tracked`);
+        printFunc(`${username}, ${targetPhrase} count is ${currentCount}`);
       }
     }
     default: {
@@ -147,39 +145,39 @@ async function handleModCommand(messageParts, printFunc, clients) {
   const { firestore } = clients;
   const command = messageParts[0].toLowerCase();
 
-  const trackingWords = await loadTrackingWords(clients.firestore);
+  const trackingPhrases = await loadTrackingPhrases(clients.firestore);
 
   switch (command) {
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.ADD_WORD}`: {
-      const newWord = messageParts[1];
-      if (!trackingWords.includes(newWord)) {
-        firestore.collection(WORD_TRACKING_COLLECTION).doc(newWord).set({
+      const newPhrase = messageParts.slice(1).join('_');
+      if (newPhrase && !trackingPhrases.includes(newPhrase)) {
+        firestore.collection(WORD_TRACKING_COLLECTION).doc(newPhrase).set({
           count: 0
-        }).then(() => logger.info(`Tracking word added: ${newWord}`));
+        }).then(() => logger.info(`Tracking word added: ${newPhrase}`));
       }
       break;
     }
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.REMOVE_WORD}`: {
-      const wordToRemove = messageParts[1];
-      if (trackingWords.includes(wordToRemove)) {
-        firestore.collection(WORD_TRACKING_COLLECTION).doc(wordToRemove).delete().then(() => logger.info(`Tracking word removed: ${wordToRemove}`));
+      const phraseToRemove = messageParts.slice(1).join('_');
+      if (phraseToRemove && trackingPhrases.includes(phraseToRemove)) {
+        firestore.collection(WORD_TRACKING_COLLECTION).doc(phraseToRemove).delete().then(() => logger.info(`Tracking word removed: ${phraseToRemove}`));
       }
       break;
     }
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.CLEAR_WORD_COUNT}`: {
-      const wordToClear = messageParts[1];
-      if (trackingWords.includes(wordToClear)) {
-        firestore.collection(WORD_TRACKING_COLLECTION).doc(wordToClear).update('count', 0).then(() => logger.info(`Tracking word cleared: ${wordToClear}`));
+      const phraseToClear = messageParts.slice(1).join('_');
+      if (phraseToClear && strackingWords.includes(phraseToClear)) {
+        firestore.collection(WORD_TRACKING_COLLECTION).doc(phraseToClear).update('count', 0).then(() => logger.info(`Tracking word cleared: ${phraseToClear}`));
       }
       break;
     }
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.INCREMENT_WORD_COUNT}`: {
-      const wordToIncrement = messageParts[1];
-      if (trackingWords.includes(wordToIncrement)) {
-        const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(wordToIncrement);
+      const phraseToIncrement = messageParts.slice(1).join('_');
+      if (phraseToIncrement && trackingPhrases.includes(phraseToIncrement)) {
+        const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(phraseToIncrement);
         const document = await documentRef.get();
         const currentCount = document.get('count');
-        documentRef.update('count', currentCount + 1).then(() => logger.info(`Tracking word incremented: ${wordToIncrement}`));
+        documentRef.update('count', currentCount + 1).then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));
       }
     }
     default: {

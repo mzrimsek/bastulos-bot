@@ -14,7 +14,7 @@ async function loadUserCommands(firestore) {
   return commandsSnapshot.docs.map(doc => doc.data());
 }
 
-async function loadTrackingWords(firestore) {
+async function loadTrackingPhrases(firestore) {
   const wordsSnapshot = await firestore.collection(WORD_TRACKING_COLLECTION).get();
   logger.info('Tracking words loaded');
   return wordsSnapshot.docs.map(doc => doc.id);
@@ -24,5 +24,5 @@ module.exports = {
   getRandomColor,
   replaceRequestingUserInMessage,
   loadUserCommands,
-  loadTrackingWords
+  loadTrackingPhrases
 };
