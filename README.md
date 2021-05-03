@@ -11,9 +11,20 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 * !add <command> <message> - adds a command (or edits the existing command) with the specified message
 * !rm <command> - removes the specified command
 
+### Mod (only work when triggered from Twitch chat)
+
+* !addw <word/phrase> - adds a word/phrase to be tracked
+* !rmw <word/phrase> - removes a word/phrase from being tracked
+* !incw <word/phrase> - increments the word/phrase count
+* !clrw <word/phrase> - resets the word/phrase count back to 0
+
 ### General (work when triggered from both Twitch chat and Discord)
 
 * !help - displays help command (this shows different commands based on where it is triggered from)
+
+### General Twitch Only
+
+* !wordcount <word/phrase> - gets the tracked count of a word/phrase
 
 ### OBS (only work when triggered from Twitch chat)
 
