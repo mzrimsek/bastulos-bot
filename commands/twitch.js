@@ -172,12 +172,20 @@ async function handleModCommand(messageParts, printFunc, clients) {
       break;
     }
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.INCREMENT_WORD_COUNT}`: {
-      const phraseToIncrement = messageParts.slice(1).join('_');
+      const lastToken = messageParts[messageParts.length - 1];
+      const lastTokenAsNum = Number.parseInt(lastToken);
+
+      const hasCount = Number.isInteger(lastTokenAsNum);
+      const count = hasCount ? Number.parseInt(lastToken) : 1;
+
+      const phraseParts = hasCount ? messageParts.slice(1, messageParts.length - 1) : messageParts.slice(1);
+      const phraseToIncrement = phraseParts.join('_');
+
       if (phraseToIncrement && trackingPhrases.includes(phraseToIncrement)) {
         const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(phraseToIncrement);
         const document = await documentRef.get();
         const currentCount = document.get('count');
-        documentRef.update('count', currentCount + 1).then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));
+        documentRef.update('count', currentCount + count).then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));
       }
     }
     default: {
