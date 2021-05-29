@@ -166,7 +166,7 @@ async function handleModCommand(messageParts, printFunc, clients) {
     }
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.CLEAR_WORD_COUNT}`: {
       const phraseToClear = messageParts.slice(1).join('_');
-      if (phraseToClear && strackingWords.includes(phraseToClear)) {
+      if (phraseToClear && trackingPhrases.includes(phraseToClear)) {
         firestore.collection(WORD_TRACKING_COLLECTION).doc(phraseToClear).update('count', 0).then(() => logger.info(`Tracking word cleared: ${phraseToClear}`));
       }
       break;
