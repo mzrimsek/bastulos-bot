@@ -19,7 +19,7 @@ const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS } = require('./constants/comma
 
 const { handleAdminCommand, handleOBSCommand, handleModCommand, handleTwitchUserCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
-const { loadUserCommands } = require('./utils');
+const { loadUserCommands, randomlyPadContent } = require('./utils');
 
 // init twitch client
 const twitchClient = new tmi.client(tmiConfig);
@@ -73,7 +73,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
   const messageParts = message.split(' ');
   const username = `@${userInfo.username}`;
-  const printFunc = content => twitchClient.say(channel, content);
+  const printFunc = content => twitchClient.say(channel, randomlyPadContent(content));
   const commandsActiveUpdateFunc = newState => commandsActive = newState;
 
   try {
@@ -109,7 +109,7 @@ discordClient.on('message', async message => {
 
   const messageParts = content.split(' ');
   const username = `<@!${member.user.id}>`;
-  const printFunc = content => message.channel.send(content);
+  const printFunc = content => message.channel.send(randomlyPadContent(content));
 
   try {
     const userCommands = await loadUserCommands(firestore);

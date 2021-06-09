@@ -1,5 +1,7 @@
 const COMMAND_PREFACE = '!';
 
+const COMMAND_SPACER = '\u200c';
+
 const ADMIN_USER = 'bastulos';
 
 const ADMIN_COMMANDS = {
@@ -29,6 +31,7 @@ const HELP_COMMAND = 'help';
 
 module.exports = {
   COMMAND_PREFACE,
+  UNICODE_COMMAND_SPACER: COMMAND_SPACER,
   ADMIN_USER,
   ADMIN_COMMANDS,
   OBS_COMMANDS,
