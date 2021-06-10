@@ -12,9 +12,10 @@
   "dependencies": {
     "discord.js": "~11.4.2",
     "dotenv": "~8.2.0",
-    "firebase-admin": "~9.3.0",
+    "firebase-admin": "^9.9.0",
+    "mqtt": "^4.2.6",
     "obs-websocket-js": "~4.0.2",
-    "tmi.js": "~1.5.0",
+    "tmi.js": "^1.8.3",
     "winston": "~2.4.5"
   },
   "devDependencies": {
