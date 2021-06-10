@@ -1,10 +1,11 @@
 const obsConfig = require('../config/obs');
 
-const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS } = require('../constants/commands');
+const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS, LIGHT_COMMANDS } = require('../constants/commands');
 const { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } = require('../constants/firebase');
+const { LIGHT_TOPICS } = require('../constants/mqtt');
 const { SOURCES } = require('../constants/obs');
 
-const { getRandomColor, loadTrackingPhrases } = require('../utils');
+const { getRandomColor, loadTrackingPhrases, getRandomInt } = require('../utils');
 
 async function handleOBSCommand(messageParts, clients) {
   const { obsClient } = clients;
@@ -120,7 +121,7 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
 };
 
 async function handleTwitchUserCommand(messageParts, username, printFunc, clients) {
-  const { firestore } = clients;
+  const { firestore, mqttClient } = clients;
   const command = messageParts[0].toLowerCase();
 
   const trackingPhrases = await loadTrackingPhrases(clients.firestore);
@@ -134,6 +135,37 @@ async function handleTwitchUserCommand(messageParts, username, printFunc, client
         const currentCount = document.get('count');
         printFunc(`${username}, ${targetPhrase} count is ${currentCount}`);
       }
+      break;
+    }
+    case `${COMMAND_PREFACE}${LIGHT_COMMANDS.TURN_OFF}`: {
+      mqttClient.publish(LIGHT_TOPICS.office.on_off, 'off');
+      printFunc(`${username} turned off the lights!`);
+      break;
+    }
+    case `${COMMAND_PREFACE}${LIGHT_COMMANDS.TURN_ON}`: {
+      mqttClient.publish(LIGHT_TOPICS.office.on_off, 'on');
+      printFunc(`${username} turned on the lights!`);
+      break;
+    }
+    case `${COMMAND_PREFACE}${LIGHT_COMMANDS.SET_COLOR}`: {
+      const color = messageParts[1];
+      // TODO: match color against regex for [0-255,0-255,0-255]
+      const isRgb = false;
+      const topic = isRgb ? LIGHT_TOPICS.office.rgb_color : LIGHT_TOPICS.office.named_color;
+
+      mqttClient.publish(topic, color);
+      printFunc(`${username} changed the color of the lights!`);
+      break;
+    }
+    case `${COMMAND_PREFACE}${LIGHT_COMMANDS.RANDOM_COLOR}`: {
+      const r = getRandomInt(255);
+      const g = getRandomInt(255);
+      const b = getRandomInt(255);
+      const color = `[${r},${g},${b}]`;
+
+      mqttClient.publish(LIGHT_TOPICS.office.rgb_color, color);
+      printFunc(`${username} did roulette with the color of the lights!`);
+      break;
     }
     default: {
       break;

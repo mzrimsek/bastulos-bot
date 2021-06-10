@@ -27,6 +27,13 @@ const WORD_TRACKING_COMMANDS = {
   GET_COUNT: 'wordcount'
 };
 
+const LIGHT_COMMANDS = {
+  TURN_OFF: 'lightsoff',
+  TURN_ON: 'lightson',
+  SET_COLOR: 'lightscol',
+  RANDOM_COLOR: 'lightsrand'
+};
+
 const HELP_COMMAND = 'help';
 
 module.exports = {
@@ -36,5 +43,6 @@ module.exports = {
   ADMIN_COMMANDS,
   OBS_COMMANDS,
   HELP_COMMAND,
-  WORD_TRACKING_COMMANDS
+  WORD_TRACKING_COMMANDS,
+  LIGHT_COMMANDS
 };

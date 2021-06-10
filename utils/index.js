@@ -34,6 +34,7 @@ async function loadTrackingPhrases(firestore) {
 
 module.exports = {
   getRandomColor,
+  getRandomInt,
   replaceRequestingUserInMessage,
   loadUserCommands,
   loadTrackingPhrases,
