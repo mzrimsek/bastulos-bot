@@ -1,4 +1,4 @@
-const { UNICODE_COMMAND_SPACER } = require('../constants/commands');
+const { COMMAND_SPACER } = require('../constants/commands');
 const { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } = require('../constants/firebase');
 
 function getRandomColor() {
@@ -15,7 +15,7 @@ function replaceRequestingUserInMessage(username, command) {
 
 function randomlyPadContent(content) {
   const numToPad = getRandomInt(99, 1);
-  const padding = UNICODE_COMMAND_SPACER.repeat(numToPad);
+  const padding = COMMAND_SPACER.repeat(numToPad);
   console.log(`${content}${padding}`.length);
   return `${content}${padding}`;
 }
