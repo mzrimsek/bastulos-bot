@@ -10,12 +10,14 @@ const tmi = require('tmi.js');
 const OBSWebSocket = require('obs-websocket-js');
 const admin = require('firebase-admin');
 const discord = require('discord.js');
+const mqtt = require('mqtt');
 
 const tmiConfig = require('./config/tmi');
 const firebaseConfig = require('./config/firebase');
 const discordConfig = require('./config/discord');
+const mqttConfig = require('./config/mqtt');
 
-const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS } = require('./constants/commands');
+const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } = require('./constants/commands');
 
 const { handleAdminCommand, handleOBSCommand, handleModCommand, handleTwitchUserCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
@@ -57,11 +59,18 @@ discordClient.on('ready', () => {
   logger.info(`Logged in as: ${discordClient.user.tag} - (${discordClient.user.id})`);
 });
 
+// init mqtt client
+const mqttClient = mqtt.connect(`tcp://${mqttConfig.address}`);
+mqttClient.on('connect', () => {
+  logger.info('Connected to MQTT Broker');
+});
+
 const clients = {
   twitchClient,
   obsClient,
   firestore,
-  discordClient
+  discordClient,
+  mqttClient
 };
 
 let commandsActive = true;
@@ -89,7 +98,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
     const userCommands = await loadUserCommands(firestore);
 
-    handleHelpCommand(messageParts, printFunc, userCommands, OBS_COMMANDS);
+    handleHelpCommand(messageParts, printFunc, userCommands, OBS_COMMANDS, LIGHT_COMMANDS);
     handleUserCommand(messageParts, username, printFunc, userCommands);
     handleOBSCommand(messageParts, clients);
     handleTwitchUserCommand(messageParts, username, printFunc, clients);
