@@ -60,7 +60,10 @@ discordClient.on('ready', () => {
 });
 
 // init mqtt client
-const mqttClient = mqtt.connect(`mqtt://${mqttConfig.address}`);
+const mqttClient = mqtt.connect(`tcp://${mqttConfig.address}`);
+mqttClient.on('connect', () => {
+  logger.info('Connected to MQTT Broker');
+});
 
 const clients = {
   twitchClient,

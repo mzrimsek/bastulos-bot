@@ -148,13 +148,33 @@ async function handleTwitchUserCommand(messageParts, username, printFunc, client
       break;
     }
     case `${COMMAND_PREFACE}${LIGHT_COMMANDS.SET_COLOR}`: {
-      const color = messageParts[1];
-      // TODO: match color against regex for [0-255,0-255,0-255]
-      const isRgb = false;
-      const topic = isRgb ? LIGHT_TOPICS.office.rgb_color : LIGHT_TOPICS.office.named_color;
+      if (messageParts.length === 4) {
+        const numbers = messageParts.slice(1);
+        const cleanedNumbers = numbers.map(number => {
+          let numValue = Number.parseInt(number);
 
-      mqttClient.publish(topic, color);
-      printFunc(`${username} changed the color of the lights!`);
+          if (Number.isInteger(numValue) && numValue < 0) {
+            numValue = 0;
+          }
+
+          if (Number.isInteger(numValue) && numValue > 255) {
+            numValue = 255;
+          }
+
+          return numValue;
+        });
+
+        const rgbValue = `[${cleanedNumbers.join(',')}]`;
+        mqttClient.publish(LIGHT_TOPICS.office.rgb_color, rgbValue);
+        printFunc(`${username} changed the color of the lights!`);
+      }
+
+      if (messageParts.length === 2) {
+        const color = messageParts[1];
+        mqttClient.publish(LIGHT_TOPICS.office.named_color, color);
+        printFunc(`${username} changed the color of the lights!`);
+      }
+
       break;
     }
     case `${COMMAND_PREFACE}${LIGHT_COMMANDS.RANDOM_COLOR}`: {
