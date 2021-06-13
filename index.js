@@ -8,10 +8,10 @@ global.logger = logger;
 
 const tmi = require('tmi.js');
 const OBSWebSocket = require('obs-websocket-js');
-const discord = require('discord.js');
 const mqtt = require('mqtt');
 
 const { firestore, collections } = require('./clients/firebase');
+const { discordClient } = require('./clients/discord');
 
 const tmiConfig = require('./config/tmi');
 const obsConfig = require('./config/obs');
@@ -38,16 +38,6 @@ obsClient.on('ConnectionOpened', () => {
 obsClient.on('ConnectionClosed', () => {
   obsConnected = false;
   logger.info('Disconnected from OBSWebSocket');
-});
-
-// init discord client
-const discordClient = new discord.Client();
-discordClient.login(discordConfig.token);
-
-// init connection to discord server
-discordClient.on('ready', () => {
-  logger.info('Connected to Discord');
-  logger.info(`Logged in as: ${discordClient.user.tag} - (${discordClient.user.id})`);
 });
 
 // init mqtt client
