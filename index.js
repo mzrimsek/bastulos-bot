@@ -19,6 +19,7 @@ const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } = require('.
 
 const { handleAdminCommand, handleOBSCommand, handleModCommand, handleTwitchUserCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
+
 const { loadUserCommands, randomlyPadContent } = require('./utils');
 
 const clients = {
