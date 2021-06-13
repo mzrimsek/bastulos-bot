@@ -2,9 +2,6 @@ const channelKeys = Object.keys(process.env).filter(key => key.match(/TWITCH_CHA
 const channels = channelKeys.map(key => process.env[key]);
 
 const config = {
-  options: {
-    debug: true
-  },
   connection: {
     reconnect: true
   },
