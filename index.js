@@ -7,9 +7,9 @@ logger.level = 'debug';
 global.logger = logger;
 
 const tmi = require('tmi.js');
-const OBSWebSocket = require('obs-websocket-js');
 const mqtt = require('mqtt');
 
+const { obsClient, obsConnected } = require('./clients/obs');
 const { firestore, collections } = require('./clients/firebase');
 const { discordClient } = require('./clients/discord');
 
@@ -27,18 +27,6 @@ const { loadUserCommands, randomlyPadContent } = require('./utils');
 // init twitch client
 const twitchClient = new tmi.client(tmiConfig);
 twitchClient.connect();
-
-// init obs client
-let obsConnected = false;
-const obsClient = new OBSWebSocket();
-obsClient.on('ConnectionOpened', () => {
-  obsConnected = true;
-  logger.info('Connected to OBSWebSocket');
-});
-obsClient.on('ConnectionClosed', () => {
-  obsConnected = false;
-  logger.info('Disconnected from OBSWebSocket');
-});
 
 // init mqtt client
 const mqttClient = mqtt.connect(`tcp://${mqttConfig.address}`);
