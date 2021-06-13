@@ -1,6 +1,5 @@
 
 const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS, LIGHT_COMMANDS } = require('../constants/commands');
-const { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } = require('../constants/firebase');
 const { LIGHT_TOPICS } = require('../constants/mqtt');
 const { SOURCES } = require('../constants/obs');
 
@@ -78,7 +77,10 @@ async function handleOBSCommand(messageParts, clients) {
 }
 
 function handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients) {
-  const { firestore } = clients;
+  const { firebase } = clients;
+  const { firestore, collections } = firebase;
+  const { commandsCollection } = collections;
+
   const command = messageParts[0].toLowerCase();
 
   switch (command) {
@@ -98,7 +100,7 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.ADD_COMMAND}`: {
       const newCommand = messageParts[1];
       const newMessage = messageParts.slice(2).join(' ');
-      firestore.collection(COMMANDS_COLLECTION).doc(newCommand).set({
+      commandsCollection.doc(newCommand).set({
         command: newCommand,
         message: newMessage
       }).then(() => logger.info(`Command added: ${newCommand}`));
@@ -106,7 +108,7 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
     }
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.REMOVE_COMMAND}`: {
       const commandToRemove = messageParts[1];
-      firestore.collection(COMMANDS_COLLECTION).doc(commandToRemove).delete().then(() => logger.info(`Command removed: ${commandToRemove}`));
+      commandsCollection.doc(commandToRemove).delete().then(() => logger.info(`Command removed: ${commandToRemove}`));
       break;
     }
     default: {
@@ -116,16 +118,19 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
 };
 
 async function handleTwitchUserCommand(messageParts, username, printFunc, clients) {
-  const { firestore, mqttClient } = clients;
+  const { firebase, mqttClient } = clients;
+  const { firestore, collections } = firebase;
+  const { trackingWordsCollection } = collections;
+
   const command = messageParts[0].toLowerCase();
 
-  const trackingPhrases = await loadTrackingPhrases(clients.firestore);
+  const trackingPhrases = await loadTrackingPhrases(firestore);
 
   switch (command) {
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.GET_COUNT}`: {
       const targetPhrase = messageParts.slice(1).join('_');
       if (targetPhrase && trackingPhrases.includes(targetPhrase)) {
-        const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(targetPhrase);
+        const documentRef = trackingWordsCollection.doc(targetPhrase);
         const document = await documentRef.get();
         const currentCount = document.get('count');
         printFunc(`${username}, ${targetPhrase} count is ${currentCount}`);
@@ -189,16 +194,19 @@ async function handleTwitchUserCommand(messageParts, username, printFunc, client
 }
 
 async function handleModCommand(messageParts, printFunc, clients) {
-  const { firestore } = clients;
+  const { firebase } = clients;
+  const { firestore, collections } = firebase;
+  const { trackingWordsCollection } = collections;
+
   const command = messageParts[0].toLowerCase();
 
-  const trackingPhrases = await loadTrackingPhrases(clients.firestore);
+  const trackingPhrases = await loadTrackingPhrases(firestore);
 
   switch (command) {
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.ADD_WORD}`: {
       const newPhrase = messageParts.slice(1).join('_');
       if (newPhrase && !trackingPhrases.includes(newPhrase)) {
-        firestore.collection(WORD_TRACKING_COLLECTION).doc(newPhrase).set({
+        trackingWordsCollection.doc(newPhrase).set({
           count: 0
         }).then(() => logger.info(`Tracking word added: ${newPhrase}`));
       }
@@ -207,14 +215,14 @@ async function handleModCommand(messageParts, printFunc, clients) {
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.REMOVE_WORD}`: {
       const phraseToRemove = messageParts.slice(1).join('_');
       if (phraseToRemove && trackingPhrases.includes(phraseToRemove)) {
-        firestore.collection(WORD_TRACKING_COLLECTION).doc(phraseToRemove).delete().then(() => logger.info(`Tracking word removed: ${phraseToRemove}`));
+        trackingWordsCollection.doc(phraseToRemove).delete().then(() => logger.info(`Tracking word removed: ${phraseToRemove}`));
       }
       break;
     }
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.CLEAR_WORD_COUNT}`: {
       const phraseToClear = messageParts.slice(1).join('_');
       if (phraseToClear && trackingPhrases.includes(phraseToClear)) {
-        firestore.collection(WORD_TRACKING_COLLECTION).doc(phraseToClear).update('count', 0).then(() => logger.info(`Tracking word cleared: ${phraseToClear}`));
+        trackingWordsCollection.doc(phraseToClear).update('count', 0).then(() => logger.info(`Tracking word cleared: ${phraseToClear}`));
       }
       break;
     }
@@ -229,7 +237,7 @@ async function handleModCommand(messageParts, printFunc, clients) {
       const phraseToIncrement = phraseParts.join('_');
 
       if (phraseToIncrement && trackingPhrases.includes(phraseToIncrement)) {
-        const documentRef = firestore.collection(WORD_TRACKING_COLLECTION).doc(phraseToIncrement);
+        const documentRef = trackingWordsCollection.doc(phraseToIncrement);
         const document = await documentRef.get();
         const currentCount = document.get('count');
         documentRef.update('count', currentCount + count).then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));

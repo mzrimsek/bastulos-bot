@@ -6,79 +6,29 @@ logger.add(logger.transports.Console, { colorize: true });
 logger.level = 'debug';
 global.logger = logger;
 
-const tmi = require('tmi.js');
-const OBSWebSocket = require('obs-websocket-js');
-const admin = require('firebase-admin');
-const discord = require('discord.js');
-const mqtt = require('mqtt');
+const { twitchClient } = require('./clients/twitch');
+const { obsClient, obsConnected } = require('./clients/obs');
+const { firestore, collections } = require('./clients/firebase');
+const { discordClient } = require('./clients/discord');
+const { mqttClient } = require('./clients/mqtt');
 
-const tmiConfig = require('./config/tmi');
 const obsConfig = require('./config/obs');
-const firebaseConfig = require('./config/firebase');
 const discordConfig = require('./config/discord');
-const mqttConfig = require('./config/mqtt');
 
 const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } = require('./constants/commands');
 
 const { handleAdminCommand, handleOBSCommand, handleModCommand, handleTwitchUserCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
+
 const { loadUserCommands, randomlyPadContent } = require('./utils');
-
-// init twitch client
-const twitchClient = new tmi.client(tmiConfig);
-twitchClient.connect();
-
-// init obs client
-let obsConnected = false;
-const obsClient = new OBSWebSocket();
-obsClient.on('ConnectionOpened', () => {
-  obsConnected = true;
-  logger.info('Connected to OBSWebSocket');
-});
-obsClient.on('ConnectionClosed', () => {
-  obsConnected = false;
-  logger.info('Disconnected from OBSWebSocket');
-});
-
-// init firebase client
-admin.initializeApp({
-  credential: admin.credential.cert(firebaseConfig.service_account),
-  databaseURL: firebaseConfig.database_url
-});
-const firestoreSettings = {
-  timestampsInSnapshots: true
-};
-
-// init connection to firestore
-let firestore = null;
-try {
-  firestore = admin.firestore();
-  firestore.settings(firestoreSettings);
-  logger.info('Connection to Firebase established');
-} catch {
-  logger.info('Failed to connect to Firebase');
-}
-
-// init discord client
-const discordClient = new discord.Client();
-discordClient.login(discordConfig.token);
-
-// init connection to discord server
-discordClient.on('ready', () => {
-  logger.info('Connected to Discord');
-  logger.info(`Logged in as: ${discordClient.user.tag} - (${discordClient.user.id})`);
-});
-
-// init mqtt client
-const mqttClient = mqtt.connect(`tcp://${mqttConfig.address}`);
-mqttClient.on('connect', () => {
-  logger.info('Connected to MQTT Broker');
-});
 
 const clients = {
   twitchClient,
   obsClient,
-  firestore,
+  firebase: {
+    firestore,
+    collections
+  },
   discordClient,
   mqttClient
 };
