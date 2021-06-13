@@ -13,6 +13,7 @@ const discord = require('discord.js');
 const mqtt = require('mqtt');
 
 const tmiConfig = require('./config/tmi');
+const obsConfig = require('./config/obs');
 const firebaseConfig = require('./config/firebase');
 const discordConfig = require('./config/discord');
 const mqttConfig = require('./config/mqtt');
@@ -28,7 +29,16 @@ const twitchClient = new tmi.client(tmiConfig);
 twitchClient.connect();
 
 // init obs client
+let obsConnected = false;
 const obsClient = new OBSWebSocket();
+obsClient.on('ConnectionOpened', () => {
+  obsConnected = true;
+  logger.info('Connected to OBSWebSocket');
+});
+obsClient.on('ConnectionClosed', () => {
+  obsConnected = false;
+  logger.info('Disconnected from OBSWebSocket');
+});
 
 // init firebase client
 admin.initializeApp({
@@ -96,12 +106,16 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
     if (!commandsActive) return;
 
+    if (!obsConnected) {
+      await obsClient.connect(obsConfig);
+    }
+
     const userCommands = await loadUserCommands(firestore);
 
     handleHelpCommand(messageParts, printFunc, userCommands, OBS_COMMANDS, LIGHT_COMMANDS);
     handleUserCommand(messageParts, username, printFunc, userCommands);
-    handleOBSCommand(messageParts, clients);
     handleTwitchUserCommand(messageParts, username, printFunc, clients);
+    handleOBSCommand(messageParts, clients);
   } catch (error) {
     logger.error(error);
   }

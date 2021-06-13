@@ -1,4 +1,3 @@
-const obsConfig = require('../config/obs');
 
 const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS, LIGHT_COMMANDS } = require('../constants/commands');
 const { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } = require('../constants/firebase');
@@ -79,7 +78,7 @@ async function handleOBSCommand(messageParts, clients) {
 }
 
 function handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients) {
-  const { obsClient, firestore } = clients;
+  const { firestore } = clients;
   const command = messageParts[0].toLowerCase();
 
   switch (command) {
@@ -94,10 +93,6 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
         logger.info('Twitch commands are enabled');
         commandsActiveUpdateFunc(true);
       }
-      break;
-    }
-    case `${COMMAND_PREFACE}${ADMIN_COMMANDS.RECONNECT_OBS}`: {
-      obsClient.connect(obsConfig).then(() => logger.info('Connected to OBSWebSocket'));
       break;
     }
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.ADD_COMMAND}`: {
