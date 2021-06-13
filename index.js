@@ -8,13 +8,13 @@ global.logger = logger;
 
 const tmi = require('tmi.js');
 const OBSWebSocket = require('obs-websocket-js');
-const admin = require('firebase-admin');
 const discord = require('discord.js');
 const mqtt = require('mqtt');
 
+const { firestore, collections } = require('./clients/firebase');
+
 const tmiConfig = require('./config/tmi');
 const obsConfig = require('./config/obs');
-const firebaseConfig = require('./config/firebase');
 const discordConfig = require('./config/discord');
 const mqttConfig = require('./config/mqtt');
 
@@ -39,25 +39,6 @@ obsClient.on('ConnectionClosed', () => {
   obsConnected = false;
   logger.info('Disconnected from OBSWebSocket');
 });
-
-// init firebase client
-admin.initializeApp({
-  credential: admin.credential.cert(firebaseConfig.service_account),
-  databaseURL: firebaseConfig.database_url
-});
-const firestoreSettings = {
-  timestampsInSnapshots: true
-};
-
-// init connection to firestore
-let firestore = null;
-try {
-  firestore = admin.firestore();
-  firestore.settings(firestoreSettings);
-  logger.info('Connection to Firebase established');
-} catch {
-  logger.info('Failed to connect to Firebase');
-}
 
 // init discord client
 const discordClient = new discord.Client();
