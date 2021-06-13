@@ -6,14 +6,12 @@ logger.add(logger.transports.Console, { colorize: true });
 logger.level = 'debug';
 global.logger = logger;
 
-const tmi = require('tmi.js');
-
+const { twitchClient } = require('./clients/twitch');
 const { obsClient, obsConnected } = require('./clients/obs');
 const { firestore, collections } = require('./clients/firebase');
 const { discordClient } = require('./clients/discord');
 const { mqttClient } = require('./clients/mqtt');
 
-const tmiConfig = require('./config/tmi');
 const obsConfig = require('./config/obs');
 const discordConfig = require('./config/discord');
 
@@ -22,10 +20,6 @@ const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } = require('.
 const { handleAdminCommand, handleOBSCommand, handleModCommand, handleTwitchUserCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
 const { loadUserCommands, randomlyPadContent } = require('./utils');
-
-// init twitch client
-const twitchClient = new tmi.client(tmiConfig);
-twitchClient.connect();
 
 const clients = {
   twitchClient,
