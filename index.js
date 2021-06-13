@@ -7,16 +7,15 @@ logger.level = 'debug';
 global.logger = logger;
 
 const tmi = require('tmi.js');
-const mqtt = require('mqtt');
 
 const { obsClient, obsConnected } = require('./clients/obs');
 const { firestore, collections } = require('./clients/firebase');
 const { discordClient } = require('./clients/discord');
+const { mqttClient } = require('./clients/mqtt');
 
 const tmiConfig = require('./config/tmi');
 const obsConfig = require('./config/obs');
 const discordConfig = require('./config/discord');
-const mqttConfig = require('./config/mqtt');
 
 const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } = require('./constants/commands');
 
@@ -27,12 +26,6 @@ const { loadUserCommands, randomlyPadContent } = require('./utils');
 // init twitch client
 const twitchClient = new tmi.client(tmiConfig);
 twitchClient.connect();
-
-// init mqtt client
-const mqttClient = mqtt.connect(`tcp://${mqttConfig.address}`);
-mqttClient.on('connect', () => {
-  logger.info('Connected to MQTT Broker');
-});
 
 const clients = {
   twitchClient,
