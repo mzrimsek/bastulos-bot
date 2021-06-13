@@ -21,13 +21,8 @@ try {
   logger.info('Failed to connect to Firebase');
 }
 
-const commandsCollection = firestore.collection(COMMANDS_COLLECTION).get().then(() => {
-  logger.info('Commands collection loaded');
-});
-
-const trackingWordsCollection = firestore.collection(WORD_TRACKING_COLLECTION).get().then(() => {
-  logger.info('Tracking words collection loaded');
-});
+const commandsCollection = firestore.collection(COMMANDS_COLLECTION);
+const trackingWordsCollection = firestore.collection(WORD_TRACKING_COLLECTION);
 
 module.exports = {
   firestore,

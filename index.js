@@ -59,7 +59,10 @@ mqttClient.on('connect', () => {
 const clients = {
   twitchClient,
   obsClient,
-  firestore,
+  firebase: {
+    firestore,
+    collections
+  },
   discordClient,
   mqttClient
 };
