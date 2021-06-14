@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 import {
   twitchClient,
@@ -18,9 +19,10 @@ import {
   handleUserCommand,
   handleHelpCommand
 } from './commands';
+import { Clients } from './models';
 import { randomlyPadContent } from './utils';
 
-const clients = {
+const clients: Clients = {
   twitchClient,
   obsClient,
   firebase: {
@@ -41,7 +43,9 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
   const messageParts = message.split(' ');
   const username = `@${userInfo.username}`;
   const printFunc = (content: string) => twitchClient.say(channel, randomlyPadContent(content));
-  const commandsActiveUpdateFunc = (newState: boolean) => (commandsActive = newState);
+  const commandsActiveUpdateFunc = (newState: boolean) => {
+    commandsActive = newState;
+  };
 
   try {
     if (userInfo.username === ADMIN_USER) {
@@ -84,7 +88,7 @@ discordClient.on('message', async message => {
 
   const messageParts = content.split(' ');
   const username = `<@!${member.user.id}>`;
-  const printFunc = content => message.channel.send(randomlyPadContent(content));
+  const printFunc = (content: string) => message.channel.send(randomlyPadContent(content));
 
   try {
     if (await handleHelpCommand(messageParts, printFunc, clients)) return;

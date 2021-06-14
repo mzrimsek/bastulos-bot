@@ -1,3 +1,4 @@
+import * as OBSWebSocket from 'obs-websocket-js';
 import { obsConfig, logger } from '../config';
 import {
   COMMAND_PREFACE,
@@ -8,9 +9,25 @@ import {
   LIGHT_TOPICS,
   SOURCES
 } from '../constants';
+import { Clients, PrintFunc } from '../models';
 import { getRandomColor, loadTrackingPhrases, getRandomInt } from '../utils';
 
-export async function handleOBSCommand(messageParts, clients, obsConnected) {
+function setColorCorrectionToRandomColor(obsClient: OBSWebSocket) {
+  const randomColor = getRandomColor();
+  obsClient.send('SetSourceFilterSettings', {
+    sourceName: SOURCES.WEBCAM,
+    filterName: 'Color Correction',
+    filterSettings: {
+      color: randomColor
+    }
+  });
+}
+
+export async function handleOBSCommand(
+  messageParts: string[],
+  clients: Clients,
+  obsConnected: boolean
+): Promise<boolean> {
   const { obsClient } = clients;
 
   const isOBSClientConnected = async () => {
@@ -81,20 +98,11 @@ export async function handleOBSCommand(messageParts, clients, obsConnected) {
           filterEnabled: true
         });
 
-        function setColorCorrectionToRandomColor() {
-          const randomColor = getRandomColor();
-          obsClient.send('SetSourceFilterSettings', {
-            sourceName: SOURCES.WEBCAM,
-            filterName: 'Color Correction',
-            filterSettings: {
-              color: randomColor
-            }
-          });
-        }
+        const setColorCorrection = () => setColorCorrectionToRandomColor(obsClient);
 
         const rate = 1000 / numTimes;
         for (let i = 0; i < numTimes; i++) {
-          setTimeout(setColorCorrectionToRandomColor, rate * i);
+          setTimeout(setColorCorrection, rate * i);
         }
       }
       return true;
@@ -119,12 +127,12 @@ export async function handleOBSCommand(messageParts, clients, obsConnected) {
 }
 
 export function handleAdminCommand(
-  messageParts,
-  printFunc,
-  commandsActive,
-  commandsActiveUpdateFunc,
-  clients
-) {
+  messageParts: string[],
+  printFunc: PrintFunc,
+  commandsActive: boolean,
+  commandsActiveUpdateFunc: (newState: boolean) => void,
+  clients: Clients
+): boolean {
   const { firebase } = clients;
   const { collections } = firebase;
   const { commandsCollection } = collections;
@@ -170,7 +178,12 @@ export function handleAdminCommand(
   }
 }
 
-export async function handleTwitchUserCommand(messageParts, username, printFunc, clients) {
+export async function handleTwitchUserCommand(
+  messageParts: string[],
+  username: string,
+  printFunc: PrintFunc,
+  clients: Clients
+): Promise<boolean> {
   const { firebase, mqttClient } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
@@ -246,7 +259,11 @@ export async function handleTwitchUserCommand(messageParts, username, printFunc,
   }
 }
 
-export async function handleModCommand(messageParts, printFunc, clients) {
+export async function handleModCommand(
+  messageParts: string[],
+  printFunc: PrintFunc,
+  clients: Clients
+): Promise<boolean> {
   const { firebase } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
@@ -309,7 +326,7 @@ export async function handleModCommand(messageParts, printFunc, clients) {
       if (phraseToIncrement && trackingPhrases.includes(phraseToIncrement)) {
         const documentRef = trackingWordsCollection.doc(phraseToIncrement);
         const document = await documentRef.get();
-        const currentCount = document.get('count');
+        const currentCount: number = document.get('count');
         documentRef
           .update('count', currentCount + count)
           .then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));

@@ -1,25 +1,26 @@
 import { logger } from '../config';
 import { COMMAND_SPACER } from '../constants';
+import { Command, FirebaseClient } from '../models';
 
-export function getRandomColor() {
+export function getRandomColor(): number {
   return (Math.random() * 4294967296) >>> 0;
 }
 
-export function getRandomInt(max: number, offset = 0) {
+export function getRandomInt(max: number, offset = 0): number {
   return Math.floor(Math.random() * max) + offset;
 }
 
-export function replaceRequestingUserInMessage(username: string, command: string) {
+export function replaceRequestingUserInMessage(username: string, command: string): string {
   return command.replace('{user}', username);
 }
 
-export function randomlyPadContent(content: string) {
+export function randomlyPadContent(content: string): string {
   const numToPad = getRandomInt(99, 1);
   const padding = COMMAND_SPACER.repeat(numToPad);
   return `${content}${padding}`;
 }
 
-export async function loadUserCommands(firebase: any) {
+export async function loadUserCommands(firebase: FirebaseClient): Promise<Command[]> {
   const { collections } = firebase;
   const { commandsCollection } = collections;
 
@@ -28,7 +29,7 @@ export async function loadUserCommands(firebase: any) {
   return commandsSnapshot.docs.map(doc => doc.data());
 }
 
-export async function loadTrackingPhrases(firebase: any) {
+export async function loadTrackingPhrases(firebase: FirebaseClient): Promise<string[]> {
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
 

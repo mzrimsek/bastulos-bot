@@ -1,8 +1,14 @@
 import { logger } from '../config';
 import { COMMAND_PREFACE, HELP_COMMAND } from '../constants/commands';
+import { Clients, PrintFunc } from '../models';
 import { replaceRequestingUserInMessage, loadUserCommands } from '../utils';
 
-export async function handleUserCommand(messageParts, username, printFunc, clients) {
+export async function handleUserCommand(
+  messageParts: string[],
+  username: string,
+  printFunc: PrintFunc,
+  clients: Clients
+): Promise<boolean> {
   const command = messageParts[0].toLowerCase();
 
   const { firebase } = clients;
@@ -21,11 +27,11 @@ export async function handleUserCommand(messageParts, username, printFunc, clien
 }
 
 export async function handleHelpCommand(
-  messageParts,
-  printFunc,
-  clients,
-  ...extraCommandsDefinitions
-) {
+  messageParts: string[],
+  printFunc: PrintFunc,
+  clients: Clients,
+  ...extraCommandsDefinitions: Record<string, string>[]
+): Promise<boolean> {
   const command = messageParts[0].toLowerCase();
 
   if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
@@ -36,7 +42,7 @@ export async function handleHelpCommand(
       const extraCommandKeys = Object.keys(extraCommandsDefinition);
       return extraCommandKeys.map(commandKey => extraCommandsDefinition[commandKey]);
     });
-    const extraCommandsList = [].concat(...extraCommandsLists);
+    const extraCommandsList: string[] = [].concat(...extraCommandsLists);
 
     const userCommandList = userCommands.map(userCommand => userCommand.command);
     const allCommandList = [...userCommandList, ...extraCommandsList, HELP_COMMAND];
