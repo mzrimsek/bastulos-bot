@@ -20,7 +20,7 @@ const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } = require('.
 const { handleAdminCommand, handleOBSCommand, handleModCommand, handleTwitchUserCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
 
-const { loadUserCommands, randomlyPadContent } = require('./utils');
+const { randomlyPadContent } = require('./utils');
 
 const clients = {
   twitchClient,
@@ -60,12 +60,10 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
       await obsClient.connect(obsConfig);
     }
 
-    const userCommands = await loadUserCommands(firestore);
-
-    handleHelpCommand(messageParts, printFunc, userCommands, OBS_COMMANDS, LIGHT_COMMANDS);
-    handleUserCommand(messageParts, username, printFunc, userCommands);
     handleTwitchUserCommand(messageParts, username, printFunc, clients);
     handleOBSCommand(messageParts, clients);
+    handleUserCommand(messageParts, username, printFunc, clients);
+    handleHelpCommand(messageParts, printFunc, clients, OBS_COMMANDS, LIGHT_COMMANDS);
   } catch (error) {
     logger.error(error);
   }
@@ -85,10 +83,8 @@ discordClient.on('message', async message => {
   const printFunc = content => message.channel.send(randomlyPadContent(content));
 
   try {
-    const userCommands = await loadUserCommands(firestore);
-
-    handleHelpCommand(messageParts, printFunc, userCommands);
-    handleUserCommand(messageParts, username, printFunc, userCommands);
+    handleHelpCommand(messageParts, printFunc, clients);
+    handleUserCommand(messageParts, username, printFunc, clients);
   } catch (error) {
     logger.error(error);
   }
