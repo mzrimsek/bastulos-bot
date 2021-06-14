@@ -1,7 +1,8 @@
-const OBSWebSocket = require('obs-websocket-js');
+import * as OBSWebSocket from 'obs-websocket-js';
+import { logger } from '../config';
 
-let obsConnected = false;
-const obsClient = new OBSWebSocket();
+export let obsConnected = false;
+export const obsClient = new OBSWebSocket();
 obsClient.on('ConnectionOpened', () => {
   obsConnected = true;
   logger.info('Connected to OBSWebSocket');
@@ -10,8 +11,3 @@ obsClient.on('ConnectionClosed', () => {
   obsConnected = false;
   logger.info('Disconnected from OBSWebSocket');
 });
-
-module.exports = {
-  obsClient,
-  obsConnected
-};

@@ -1,7 +1,6 @@
-const admin = require('firebase-admin');
-
-const firebaseConfig = require('../config/firebase');
-const { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } = require('../constants/firebase');
+import * as admin from 'firebase-admin';
+import { firebaseConfig, logger } from '../config';
+import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from '../constants';
 
 const firestoreSettings = {
   timestampsInSnapshots: true
@@ -12,7 +11,7 @@ admin.initializeApp({
   databaseURL: firebaseConfig.database_url
 });
 
-let firestore = null;
+export let firestore = null;
 try {
   firestore = admin.firestore();
   firestore.settings(firestoreSettings);
@@ -24,10 +23,7 @@ try {
 const commandsCollection = firestore.collection(COMMANDS_COLLECTION);
 const trackingWordsCollection = firestore.collection(WORD_TRACKING_COLLECTION);
 
-module.exports = {
-  firestore,
-  collections: {
-    commandsCollection,
-    trackingWordsCollection
-  }
-};
+export const collections = [
+  commandsCollection,
+  trackingWordsCollection
+];

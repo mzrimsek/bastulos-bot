@@ -1,20 +1,7 @@
 require('dotenv').config();
-
-const logger = require('winston');
-logger.remove(logger.transports.Console);
-logger.add(logger.transports.Console, { colorize: true });
-logger.level = 'debug';
-global['logger'] = logger;
-
-const { twitchClient } = require('./clients/twitch');
-const { obsClient, obsConnected } = require('./clients/obs');
-const { firestore, collections } = require('./clients/firebase');
-const { discordClient } = require('./clients/discord');
-const { mqttClient } = require('./clients/mqtt');
-
-const discordConfig = require('./config/discord');
-
-const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } = require('./constants/commands');
+import { twitchClient, obsClient, obsConnected, firestore, collections, discordClient, mqttClient } from './clients';
+import { discordConfig, logger } from './config';
+import { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } from './constants';
 
 const { handleAdminCommand, handleOBSCommand, handleModCommand, handleTwitchUserCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');

@@ -1,4 +1,5 @@
-import { COMMAND_SPACER } from '../constants/commands';
+import { logger } from '../config';
+import { COMMAND_SPACER } from '../constants';
 
 function getRandomColor() {
   return (Math.random() * 4294967296) >>> 0;

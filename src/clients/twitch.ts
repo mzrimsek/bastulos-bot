@@ -1,10 +1,5 @@
-const tmi = require('tmi.js');
+import * as tmi from 'tmi.js';
+import { twitchConfig } from '../config';
 
-const tmiConfig = require('../config/twitch');
-
-const twitchClient = new tmi.client(tmiConfig);
+export const twitchClient = new tmi.client(twitchConfig);
 twitchClient.connect();
-
-module.exports = {
-  twitchClient
-};

@@ -20,6 +20,7 @@
     "winston": "~3.3.3"
   },
   "devDependencies": {
+    "@types/tmi.js": "^1.7.1",
     "ts-node-dev": "^1.1.6",
     "typescript": "^4.3.2"
   }
