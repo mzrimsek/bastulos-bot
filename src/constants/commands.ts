@@ -18,7 +18,7 @@ export const OBS_COMMANDS = {
   TOGGLE_AQUA: 'aqua'
 };
 
-const WORD_TRACKING_COMMANDS = {
+export const WORD_TRACKING_COMMANDS = {
   ADD_WORD: 'addw',
   REMOVE_WORD: 'rmw',
   CLEAR_WORD_COUNT: 'clrw',
@@ -26,18 +26,11 @@ const WORD_TRACKING_COMMANDS = {
   GET_COUNT: 'wordcount'
 };
 
-const LIGHT_COMMANDS = {
+export const LIGHT_COMMANDS = {
   TURN_OFF: 'lightsoff',
   TURN_ON: 'lightson',
   SET_COLOR: 'lightscol',
   RANDOM_COLOR: 'lightsrand'
 };
 
-const HELP_COMMAND = 'help';
-
-module.exports = {
-  OBS_COMMANDS,
-  HELP_COMMAND,
-  WORD_TRACKING_COMMANDS,
-  LIGHT_COMMANDS
-};
+export const HELP_COMMAND = 'help';
