@@ -1,4 +1,4 @@
-const config = {
+export default {
   service_account: {
     type: "service_account",
     project_id: process.env.FIREBASE_PROJECT_ID,
@@ -14,5 +14,3 @@ const config = {
   },
   database_url: process.env.FIREBASE_DATABASE_URL
 };
-
-module.exports = config;
