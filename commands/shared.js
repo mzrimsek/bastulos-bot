@@ -6,8 +6,7 @@ async function handleUserCommand(messageParts, username, printFunc, clients) {
   const command = messageParts[0].toLowerCase();
 
   const { firebase } = clients;
-  const { firestore } = firebase;
-  const userCommands = await loadUserCommands(firestore);
+  const userCommands = await loadUserCommands(firebase);
 
   const foundCommand = userCommands.find(x => `${COMMAND_PREFACE}${x.command}` === command);
   if (foundCommand) {
@@ -24,11 +23,10 @@ async function handleUserCommand(messageParts, username, printFunc, clients) {
 async function handleHelpCommand(messageParts, printFunc, clients, ...extraCommandsDefinitions) {
   const command = messageParts[0].toLowerCase();
 
-  const { firebase } = clients;
-  const { firestore } = firebase;
-  const userCommands = await loadUserCommands(firestore);
-
   if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
+    const { firebase } = clients;
+    const userCommands = await loadUserCommands(firebase);
+
     const extraCommandsLists = extraCommandsDefinitions.map(extraCommandsDefinition => {
       const extraCommandKeys = Object.keys(extraCommandsDefinition);
       return extraCommandKeys.map(commandKey => extraCommandsDefinition[commandKey]);

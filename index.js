@@ -47,11 +47,11 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
   try {
     if (userInfo.username === ADMIN_USER) {
-      handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients);
+      if (handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients)) return;
     }
 
     if (userInfo.username === ADMIN_USER || userInfo.mod) {
-      await handleModCommand(messageParts, printFunc, clients);
+      if (await handleModCommand(messageParts, printFunc, clients)) return;
     }
 
     if (!commandsActive) return;
@@ -60,10 +60,10 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
       await obsClient.connect(obsConfig);
     }
 
-    handleTwitchUserCommand(messageParts, username, printFunc, clients);
-    handleOBSCommand(messageParts, clients);
-    handleUserCommand(messageParts, username, printFunc, clients);
-    handleHelpCommand(messageParts, printFunc, clients, OBS_COMMANDS, LIGHT_COMMANDS);
+    if (await handleTwitchUserCommand(messageParts, username, printFunc, clients)) return;
+    if (await handleOBSCommand(messageParts, clients)) return;
+    if (await handleHelpCommand(messageParts, printFunc, clients, OBS_COMMANDS, LIGHT_COMMANDS)) return;
+    if (await handleUserCommand(messageParts, username, printFunc, clients)) return;
   } catch (error) {
     logger.error(error);
   }
@@ -83,8 +83,8 @@ discordClient.on('message', async message => {
   const printFunc = content => message.channel.send(randomlyPadContent(content));
 
   try {
-    handleHelpCommand(messageParts, printFunc, clients);
-    handleUserCommand(messageParts, username, printFunc, clients);
+    if (await handleHelpCommand(messageParts, printFunc, clients)) return;
+    if (await handleUserCommand(messageParts, username, printFunc, clients)) return;
   } catch (error) {
     logger.error(error);
   }
