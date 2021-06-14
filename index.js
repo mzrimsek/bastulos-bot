@@ -12,7 +12,6 @@ const { firestore, collections } = require('./clients/firebase');
 const { discordClient } = require('./clients/discord');
 const { mqttClient } = require('./clients/mqtt');
 
-const obsConfig = require('./config/obs');
 const discordConfig = require('./config/discord');
 
 const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } = require('./constants/commands');
@@ -56,12 +55,8 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
     if (!commandsActive) return;
 
-    if (!obsConnected) {
-      await obsClient.connect(obsConfig);
-    }
-
     if (await handleTwitchUserCommand(messageParts, username, printFunc, clients)) return;
-    if (await handleOBSCommand(messageParts, clients)) return;
+    if (await handleOBSCommand(messageParts, clients, obsConnected)) return;
     if (await handleHelpCommand(messageParts, printFunc, clients, OBS_COMMANDS, LIGHT_COMMANDS)) return;
     if (await handleUserCommand(messageParts, username, printFunc, clients)) return;
   } catch (error) {
