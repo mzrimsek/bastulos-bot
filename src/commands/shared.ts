@@ -1,8 +1,8 @@
 import { logger } from '../config';
 import { COMMAND_PREFACE, HELP_COMMAND } from '../constants/commands';
-const { replaceRequestingUserInMessage, loadUserCommands } = require('../utils');
+import { replaceRequestingUserInMessage, loadUserCommands } from '../utils';
 
-async function handleUserCommand(messageParts, username, printFunc, clients) {
+export async function handleUserCommand(messageParts, username, printFunc, clients) {
   const command = messageParts[0].toLowerCase();
 
   const { firebase } = clients;
@@ -20,7 +20,12 @@ async function handleUserCommand(messageParts, username, printFunc, clients) {
   return false;
 }
 
-async function handleHelpCommand(messageParts, printFunc, clients, ...extraCommandsDefinitions) {
+export async function handleHelpCommand(
+  messageParts,
+  printFunc,
+  clients,
+  ...extraCommandsDefinitions
+) {
   const command = messageParts[0].toLowerCase();
 
   if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
@@ -46,8 +51,3 @@ async function handleHelpCommand(messageParts, printFunc, clients, ...extraComma
 
   return false;
 }
-
-module.exports = {
-  handleUserCommand,
-  handleHelpCommand
-};

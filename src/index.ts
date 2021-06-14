@@ -10,15 +10,15 @@ import {
 } from './clients';
 import { discordConfig, logger } from './config';
 import { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } from './constants';
-
-const {
+import {
   handleAdminCommand,
   handleOBSCommand,
   handleModCommand,
-  handleTwitchUserCommand
-} = require('./commands/twitch');
-const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
-const { randomlyPadContent } = require('./utils');
+  handleTwitchUserCommand,
+  handleUserCommand,
+  handleHelpCommand
+} from './commands';
+import { randomlyPadContent } from './utils';
 
 const clients = {
   twitchClient,
@@ -40,7 +40,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
   const messageParts = message.split(' ');
   const username = `@${userInfo.username}`;
-  const printFunc = content => twitchClient.say(channel, randomlyPadContent(content));
+  const printFunc = (content: string) => twitchClient.say(channel, randomlyPadContent(content));
   const commandsActiveUpdateFunc = (newState: boolean) => (commandsActive = newState);
 
   try {

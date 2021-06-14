@@ -1,25 +1,25 @@
 import { logger } from '../config';
 import { COMMAND_SPACER } from '../constants';
 
-function getRandomColor() {
+export function getRandomColor() {
   return (Math.random() * 4294967296) >>> 0;
 }
 
-function getRandomInt(max, offset = 0) {
+export function getRandomInt(max, offset = 0) {
   return Math.floor(Math.random() * max) + offset;
 }
 
-function replaceRequestingUserInMessage(username, command) {
+export function replaceRequestingUserInMessage(username, command) {
   return command.replace('{user}', username);
 }
 
-function randomlyPadContent(content) {
+export function randomlyPadContent(content) {
   const numToPad = getRandomInt(99, 1);
   const padding = COMMAND_SPACER.repeat(numToPad);
   return `${content}${padding}`;
 }
 
-async function loadUserCommands(firebase) {
+export async function loadUserCommands(firebase) {
   const { collections } = firebase;
   const { commandsCollection } = collections;
 
@@ -28,7 +28,7 @@ async function loadUserCommands(firebase) {
   return commandsSnapshot.docs.map(doc => doc.data());
 }
 
-async function loadTrackingPhrases(firebase) {
+export async function loadTrackingPhrases(firebase) {
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
 
@@ -36,12 +36,3 @@ async function loadTrackingPhrases(firebase) {
   logger.info('Tracking words loaded');
   return wordsSnapshot.docs.map(doc => doc.id);
 }
-
-module.exports = {
-  getRandomColor,
-  getRandomInt,
-  replaceRequestingUserInMessage,
-  loadUserCommands,
-  loadTrackingPhrases,
-  randomlyPadContent
-};

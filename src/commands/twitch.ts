@@ -8,9 +8,9 @@ import {
   LIGHT_TOPICS,
   SOURCES
 } from '../constants';
-const { getRandomColor, loadTrackingPhrases, getRandomInt } = require('../utils');
+import { getRandomColor, loadTrackingPhrases, getRandomInt } from '../utils';
 
-async function handleOBSCommand(messageParts, clients, obsConnected) {
+export async function handleOBSCommand(messageParts, clients, obsConnected) {
   const { obsClient } = clients;
 
   const isOBSClientConnected = async () => {
@@ -118,7 +118,7 @@ async function handleOBSCommand(messageParts, clients, obsConnected) {
   }
 }
 
-function handleAdminCommand(
+export function handleAdminCommand(
   messageParts,
   printFunc,
   commandsActive,
@@ -170,7 +170,7 @@ function handleAdminCommand(
   }
 }
 
-async function handleTwitchUserCommand(messageParts, username, printFunc, clients) {
+export async function handleTwitchUserCommand(messageParts, username, printFunc, clients) {
   const { firebase, mqttClient } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
@@ -246,7 +246,7 @@ async function handleTwitchUserCommand(messageParts, username, printFunc, client
   }
 }
 
-async function handleModCommand(messageParts, printFunc, clients) {
+export async function handleModCommand(messageParts, printFunc, clients) {
   const { firebase } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
@@ -321,10 +321,3 @@ async function handleModCommand(messageParts, printFunc, clients) {
     }
   }
 }
-
-module.exports = {
-  handleOBSCommand,
-  handleAdminCommand,
-  handleModCommand,
-  handleTwitchUserCommand
-};
