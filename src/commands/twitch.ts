@@ -1,9 +1,5 @@
-const obsConfig = require('../config/obs');
-
-const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS, LIGHT_COMMANDS } = require('../constants/commands');
-const { LIGHT_TOPICS } = require('../constants/mqtt');
-const { SOURCES } = require('../constants/obs');
-
+import { obsConfig, logger } from '../config';
+import { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS, LIGHT_COMMANDS, LIGHT_TOPICS, SOURCES } from '../constants';
 const { getRandomColor, loadTrackingPhrases, getRandomInt } = require('../utils');
 
 async function handleOBSCommand(messageParts, clients, obsConnected) {

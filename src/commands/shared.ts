@@ -1,5 +1,5 @@
-const { COMMAND_PREFACE, HELP_COMMAND } = require('../constants/commands');
-
+import { logger } from '../config';
+import { COMMAND_PREFACE, HELP_COMMAND } from '../constants/commands';
 const { replaceRequestingUserInMessage, loadUserCommands } = require('../utils');
 
 async function handleUserCommand(messageParts, username, printFunc, clients) {
