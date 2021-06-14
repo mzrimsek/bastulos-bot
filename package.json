@@ -5,19 +5,19 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
-    "dev": "ts-node-dev index.ts",
+    "dev": "ts-node-dev src/index.ts",
     "start": "tsc && node ./dist/index.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Mike Zrimsek",
+  "license": "MIT",
   "dependencies": {
-    "discord.js": "~11.4.2",
-    "dotenv": "~8.2.0",
-    "firebase-admin": "^9.9.0",
-    "mqtt": "^4.2.6",
+    "discord.js": "~12.5.3",
+    "dotenv": "~10.0.0",
+    "firebase-admin": "~9.9.0",
+    "mqtt": "~4.2.6",
     "obs-websocket-js": "~4.0.2",
-    "tmi.js": "^1.8.3",
-    "winston": "~2.4.5"
+    "tmi.js": "~1.8.3",
+    "winston": "~3.3.3"
   },
   "devDependencies": {
     "ts-node-dev": "^1.1.6",
