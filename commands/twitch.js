@@ -1,4 +1,3 @@
-
 const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS, LIGHT_COMMANDS } = require('../constants/commands');
 const { LIGHT_TOPICS } = require('../constants/mqtt');
 const { SOURCES } = require('../constants/obs');

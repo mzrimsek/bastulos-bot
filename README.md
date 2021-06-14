@@ -44,3 +44,7 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 ## Invite to Server
 
 https://discord.com/api/oauth2/authorize?client_id=772707347520946197&permissions=0&scope=bot
+
+## Development Notes
+
+* Command functions return true when it handles the command, false if not
