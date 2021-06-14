@@ -5,21 +5,21 @@ export function getRandomColor() {
   return (Math.random() * 4294967296) >>> 0;
 }
 
-export function getRandomInt(max, offset = 0) {
+export function getRandomInt(max: number, offset = 0) {
   return Math.floor(Math.random() * max) + offset;
 }
 
-export function replaceRequestingUserInMessage(username, command) {
+export function replaceRequestingUserInMessage(username: string, command: string) {
   return command.replace('{user}', username);
 }
 
-export function randomlyPadContent(content) {
+export function randomlyPadContent(content: string) {
   const numToPad = getRandomInt(99, 1);
   const padding = COMMAND_SPACER.repeat(numToPad);
   return `${content}${padding}`;
 }
 
-export async function loadUserCommands(firebase) {
+export async function loadUserCommands(firebase: any) {
   const { collections } = firebase;
   const { commandsCollection } = collections;
 
@@ -28,7 +28,7 @@ export async function loadUserCommands(firebase) {
   return commandsSnapshot.docs.map(doc => doc.data());
 }
 
-export async function loadTrackingPhrases(firebase) {
+export async function loadTrackingPhrases(firebase: any) {
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
 
