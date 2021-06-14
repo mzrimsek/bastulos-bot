@@ -4,7 +4,7 @@ const logger = require('winston');
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, { colorize: true });
 logger.level = 'debug';
-global.logger = logger;
+global['logger'] = logger;
 
 const { twitchClient } = require('./clients/twitch');
 const { obsClient, obsConnected } = require('./clients/obs');

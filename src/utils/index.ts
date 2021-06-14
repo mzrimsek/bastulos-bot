@@ -1,4 +1,4 @@
-const { COMMAND_SPACER } = require('../constants/commands');
+import { COMMAND_SPACER } from '../constants/commands';
 
 function getRandomColor() {
   return (Math.random() * 4294967296) >>> 0;

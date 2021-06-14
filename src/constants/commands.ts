@@ -1,16 +1,16 @@
-const COMMAND_PREFACE = '!';
+export const COMMAND_PREFACE = '!';
 
-const COMMAND_SPACER = '\u200c';
+export const COMMAND_SPACER = '\u200c';
 
-const ADMIN_USER = 'bastulos';
+export const ADMIN_USER = 'bastulos';
 
-const ADMIN_COMMANDS = {
+export const ADMIN_COMMANDS = {
   TOGGLE_COMMANDS_ACTIVE: 'active',
   ADD_COMMAND: 'add',
   REMOVE_COMMAND: 'rm',
 };
 
-const OBS_COMMANDS = {
+export const OBS_COMMANDS = {
   RESET: 'reset',
   TOGGLE_CAM: 'cam',
   TOGGLE_MUTE_MIC: 'mic',
@@ -36,10 +36,6 @@ const LIGHT_COMMANDS = {
 const HELP_COMMAND = 'help';
 
 module.exports = {
-  COMMAND_PREFACE,
-  COMMAND_SPACER,
-  ADMIN_USER,
-  ADMIN_COMMANDS,
   OBS_COMMANDS,
   HELP_COMMAND,
   WORD_TRACKING_COMMANDS,

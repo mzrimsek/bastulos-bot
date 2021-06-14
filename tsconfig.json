@@ -6,6 +6,6 @@
     "allowJs": true
   },
   "files": [
-    "index.js"
+    "src/index.ts"
   ]
 }
