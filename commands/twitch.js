@@ -1,3 +1,5 @@
+const obsConfig = require('../config/obs');
+
 const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS, LIGHT_COMMANDS } = require('../constants/commands');
 const { LIGHT_TOPICS } = require('../constants/mqtt');
 const { SOURCES } = require('../constants/obs');
@@ -6,6 +8,20 @@ const { getRandomColor, loadTrackingPhrases, getRandomInt } = require('../utils'
 
 async function handleOBSCommand(messageParts, clients) {
   const { obsClient } = clients;
+
+  const isOBSClientConnected = async () => {
+    if (!obsConnected) {
+      try {
+        await obsClient.connect(obsConfig);
+        return true;
+      } catch {
+        logger.info('Unable to connect to OBSWebsocket')
+        return false;
+      }
+    }
+    return true;
+  };
+
   const command = messageParts[0].toLowerCase();
 
   switch (command) {
