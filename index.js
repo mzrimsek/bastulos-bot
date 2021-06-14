@@ -20,7 +20,7 @@ const { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } = require('.
 const { handleAdminCommand, handleOBSCommand, handleModCommand, handleTwitchUserCommand } = require('./commands/twitch');
 const { handleUserCommand, handleHelpCommand } = require('./commands/shared');
 
-const { loadUserCommands, randomlyPadContent } = require('./utils');
+const { randomlyPadContent } = require('./utils');
 
 const clients = {
   twitchClient,
@@ -47,11 +47,11 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 
   try {
     if (userInfo.username === ADMIN_USER) {
-      handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients);
+      if (handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients)) return;
     }
 
     if (userInfo.username === ADMIN_USER || userInfo.mod) {
-      await handleModCommand(messageParts, printFunc, clients);
+      if (await handleModCommand(messageParts, printFunc, clients)) return;
     }
 
     if (!commandsActive) return;
@@ -60,12 +60,10 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
       await obsClient.connect(obsConfig);
     }
 
-    const userCommands = await loadUserCommands(firestore);
-
-    handleHelpCommand(messageParts, printFunc, userCommands, OBS_COMMANDS, LIGHT_COMMANDS);
-    handleUserCommand(messageParts, username, printFunc, userCommands);
-    handleTwitchUserCommand(messageParts, username, printFunc, clients);
-    handleOBSCommand(messageParts, clients);
+    if (await handleTwitchUserCommand(messageParts, username, printFunc, clients)) return;
+    if (await handleOBSCommand(messageParts, clients)) return;
+    if (await handleHelpCommand(messageParts, printFunc, clients, OBS_COMMANDS, LIGHT_COMMANDS)) return;
+    if (await handleUserCommand(messageParts, username, printFunc, clients)) return;
   } catch (error) {
     logger.error(error);
   }
@@ -85,10 +83,8 @@ discordClient.on('message', async message => {
   const printFunc = content => message.channel.send(randomlyPadContent(content));
 
   try {
-    const userCommands = await loadUserCommands(firestore);
-
-    handleHelpCommand(messageParts, printFunc, userCommands);
-    handleUserCommand(messageParts, username, printFunc, userCommands);
+    if (await handleHelpCommand(messageParts, printFunc, clients)) return;
+    if (await handleUserCommand(messageParts, username, printFunc, clients)) return;
   } catch (error) {
     logger.error(error);
   }

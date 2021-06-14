@@ -19,14 +19,20 @@ function randomlyPadContent(content) {
   return `${content}${padding}`;
 }
 
-async function loadUserCommands(firestore) {
-  const commandsSnapshot = await firestore.collection(COMMANDS_COLLECTION).get();
+async function loadUserCommands(firebase) {
+  const { collections } = firebase;
+  const { commandsCollection } = collections;
+
+  const commandsSnapshot = await commandsCollection.get();
   logger.info('User commands loaded');
   return commandsSnapshot.docs.map(doc => doc.data());
 }
 
-async function loadTrackingPhrases(firestore) {
-  const wordsSnapshot = await firestore.collection(WORD_TRACKING_COLLECTION).get();
+async function loadTrackingPhrases(firebase) {
+  const { collections } = firebase;
+  const { trackingWordsCollection } = collections;
+
+  const wordsSnapshot = await trackingWordsCollection.get();
   logger.info('Tracking words loaded');
   return wordsSnapshot.docs.map(doc => doc.id);
 }

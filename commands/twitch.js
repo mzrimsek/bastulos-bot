@@ -18,17 +18,17 @@ async function handleOBSCommand(messageParts, clients) {
       });
       obsClient.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: true });
       obsClient.send('SetMute', { source: SOURCES.MIC, mute: false });
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_CAM}`: {
       const properties = await obsClient.send('GetSceneItemProperties', { item: { name: SOURCES.WEBCAM } });
       const { visible } = properties;
       obsClient.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: !visible });
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_MUTE_MIC}`: {
       obsClient.send('ToggleMute', { source: SOURCES.MIC });
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.CHANGE_OVERLAY_COLOR}`: {
       let numTimes = messageParts[1] ? parseInt(messageParts[1]) : 1;
@@ -62,23 +62,23 @@ async function handleOBSCommand(messageParts, clients) {
       for (let i = 0; i < numTimes; i++) {
         setTimeout(setColorCorrectionToRandomColor, rate * i);
       }
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_AQUA}`: {
       const properties = await obsClient.send('GetSceneItemProperties', { item: { name: SOURCES.AQUA } });
       const { visible } = properties;
       obsClient.send('SetSceneItemRender', { source: SOURCES.AQUA, render: !visible });
-      break;
+      return true;
     }
     default: {
-      break;
+      return false;
     }
   }
 }
 
 function handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients) {
   const { firebase } = clients;
-  const { firestore, collections } = firebase;
+  const { collections } = firebase;
   const { commandsCollection } = collections;
 
   const command = messageParts[0].toLowerCase();
@@ -95,7 +95,7 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
         logger.info('Twitch commands are enabled');
         commandsActiveUpdateFunc(true);
       }
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.ADD_COMMAND}`: {
       const newCommand = messageParts[1];
@@ -104,30 +104,30 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
         command: newCommand,
         message: newMessage
       }).then(() => logger.info(`Command added: ${newCommand}`));
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.REMOVE_COMMAND}`: {
       const commandToRemove = messageParts[1];
       commandsCollection.doc(commandToRemove).delete().then(() => logger.info(`Command removed: ${commandToRemove}`));
-      break;
+      return true;
     }
     default: {
-      break;
+      return false;
     }
   }
 };
 
 async function handleTwitchUserCommand(messageParts, username, printFunc, clients) {
   const { firebase, mqttClient } = clients;
-  const { firestore, collections } = firebase;
+  const { collections } = firebase;
   const { trackingWordsCollection } = collections;
 
   const command = messageParts[0].toLowerCase();
 
-  const trackingPhrases = await loadTrackingPhrases(firestore);
-
   switch (command) {
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.GET_COUNT}`: {
+      const trackingPhrases = await loadTrackingPhrases(firebase);
+
       const targetPhrase = messageParts.slice(1).join('_');
       if (targetPhrase && trackingPhrases.includes(targetPhrase)) {
         const documentRef = trackingWordsCollection.doc(targetPhrase);
@@ -135,17 +135,17 @@ async function handleTwitchUserCommand(messageParts, username, printFunc, client
         const currentCount = document.get('count');
         printFunc(`${username}, ${targetPhrase} count is ${currentCount}`);
       }
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${LIGHT_COMMANDS.TURN_OFF}`: {
       mqttClient.publish(LIGHT_TOPICS.office.on_off, 'off');
       printFunc(`${username} turned off the lights!`);
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${LIGHT_COMMANDS.TURN_ON}`: {
       mqttClient.publish(LIGHT_TOPICS.office.on_off, 'on');
       printFunc(`${username} turned on the lights!`);
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${LIGHT_COMMANDS.SET_COLOR}`: {
       if (messageParts.length === 4) {
@@ -175,7 +175,7 @@ async function handleTwitchUserCommand(messageParts, username, printFunc, client
         printFunc(`${username} changed the color of the lights!`);
       }
 
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${LIGHT_COMMANDS.RANDOM_COLOR}`: {
       const r = getRandomInt(255);
@@ -185,48 +185,54 @@ async function handleTwitchUserCommand(messageParts, username, printFunc, client
 
       mqttClient.publish(LIGHT_TOPICS.office.rgb_color, color);
       printFunc(`${username} did roulette with the color of the lights!`);
-      break;
+      return true;
     }
     default: {
-      break;
+      return false;
     }
   }
 }
 
 async function handleModCommand(messageParts, printFunc, clients) {
   const { firebase } = clients;
-  const { firestore, collections } = firebase;
+  const { collections } = firebase;
   const { trackingWordsCollection } = collections;
 
   const command = messageParts[0].toLowerCase();
 
-  const trackingPhrases = await loadTrackingPhrases(firestore);
-
   switch (command) {
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.ADD_WORD}`: {
+      const trackingPhrases = await loadTrackingPhrases(firebase);
+
       const newPhrase = messageParts.slice(1).join('_');
       if (newPhrase && !trackingPhrases.includes(newPhrase)) {
         trackingWordsCollection.doc(newPhrase).set({
           count: 0
         }).then(() => logger.info(`Tracking word added: ${newPhrase}`));
       }
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.REMOVE_WORD}`: {
+      const trackingPhrases = await loadTrackingPhrases(firebase);
+
       const phraseToRemove = messageParts.slice(1).join('_');
       if (phraseToRemove && trackingPhrases.includes(phraseToRemove)) {
         trackingWordsCollection.doc(phraseToRemove).delete().then(() => logger.info(`Tracking word removed: ${phraseToRemove}`));
       }
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.CLEAR_WORD_COUNT}`: {
+      const trackingPhrases = await loadTrackingPhrases(firebase);
+
       const phraseToClear = messageParts.slice(1).join('_');
       if (phraseToClear && trackingPhrases.includes(phraseToClear)) {
         trackingWordsCollection.doc(phraseToClear).update('count', 0).then(() => logger.info(`Tracking word cleared: ${phraseToClear}`));
       }
-      break;
+      return true;
     }
     case `${COMMAND_PREFACE}${WORD_TRACKING_COMMANDS.INCREMENT_WORD_COUNT}`: {
+      const trackingPhrases = await loadTrackingPhrases(firebase);
+
       const lastToken = messageParts[messageParts.length - 1];
       const lastTokenAsNum = Number.parseInt(lastToken);
 
@@ -242,9 +248,10 @@ async function handleModCommand(messageParts, printFunc, clients) {
         const currentCount = document.get('count');
         documentRef.update('count', currentCount + count).then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));
       }
+      return true;
     }
     default: {
-      break;
+      return false;
     }
   }
 }

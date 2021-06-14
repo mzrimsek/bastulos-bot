@@ -1,22 +1,32 @@
 const { COMMAND_PREFACE, HELP_COMMAND } = require('../constants/commands');
 
-const { replaceRequestingUserInMessage } = require('../utils');
+const { replaceRequestingUserInMessage, loadUserCommands } = require('../utils');
 
-async function handleUserCommand(messageParts, username, printFunc, userCommands) {
+async function handleUserCommand(messageParts, username, printFunc, clients) {
   const command = messageParts[0].toLowerCase();
+
+  const { firebase } = clients;
+  const userCommands = await loadUserCommands(firebase);
 
   const foundCommand = userCommands.find(x => `${COMMAND_PREFACE}${x.command}` === command);
   if (foundCommand) {
     logger.info(`Found command: ${foundCommand.command}`);
     const replacedCommand = replaceRequestingUserInMessage(username, foundCommand.message);
     printFunc(replacedCommand);
+
+    return true;
   }
+
+  return false;
 }
 
-function handleHelpCommand(messageParts, printFunc, userCommands, ...extraCommandsDefinitions) {
+async function handleHelpCommand(messageParts, printFunc, clients, ...extraCommandsDefinitions) {
   const command = messageParts[0].toLowerCase();
 
   if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
+    const { firebase } = clients;
+    const userCommands = await loadUserCommands(firebase);
+
     const extraCommandsLists = extraCommandsDefinitions.map(extraCommandsDefinition => {
       const extraCommandKeys = Object.keys(extraCommandsDefinition);
       return extraCommandKeys.map(commandKey => extraCommandsDefinition[commandKey]);
@@ -28,7 +38,11 @@ function handleHelpCommand(messageParts, printFunc, userCommands, ...extraComman
 
     const helpMessageList = allCommandList.map(command => `${COMMAND_PREFACE}${command}`).join(', ');
     printFunc(`Here are the available commands: \n${helpMessageList}`);
+
+    return true;
   }
+
+  return false;
 }
 
 module.exports = {

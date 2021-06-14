@@ -7,7 +7,6 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 ### Admin (only work when triggered from Twitch chat)
 
 * !active - toggles whether commands work or not
-* !obs - connects the bot to OBS (required for OBS commands to work)
 * !add <command> <message> - adds a command (or edits the existing command) with the specified message
 * !rm <command> - removes the specified command
 
@@ -15,7 +14,7 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 
 * !addw <word/phrase> - adds a word/phrase to be tracked
 * !rmw <word/phrase> - removes a word/phrase from being tracked
-* !incw <word/phrase> - increments the word/phrase count
+* !incw <word/phrase> <number:optional> - increments the word/phrase count. Optional number parameter sets the amount to increment by
 * !clrw <word/phrase> - resets the word/phrase count back to 0
 
 ### General (work when triggered from both Twitch chat and Discord)
