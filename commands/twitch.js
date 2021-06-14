@@ -6,7 +6,7 @@ const { SOURCES } = require('../constants/obs');
 
 const { getRandomColor, loadTrackingPhrases, getRandomInt } = require('../utils');
 
-async function handleOBSCommand(messageParts, clients) {
+async function handleOBSCommand(messageParts, clients, obsConnected) {
   const { obsClient } = clients;
 
   const isOBSClientConnected = async () => {
@@ -26,63 +26,73 @@ async function handleOBSCommand(messageParts, clients) {
 
   switch (command) {
     case `${COMMAND_PREFACE}${OBS_COMMANDS.RESET}`: {
-      obsClient.send('SetSourceFilterVisibility', {
-        sourceName: SOURCES.WEBCAM,
-        filterName: 'Color Correction',
-        filterEnabled: false
-      });
-      obsClient.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: true });
-      obsClient.send('SetMute', { source: SOURCES.MIC, mute: false });
+      if (await isOBSClientConnected()) {
+        obsClient.send('SetSourceFilterVisibility', {
+          sourceName: SOURCES.WEBCAM,
+          filterName: 'Color Correction',
+          filterEnabled: false
+        });
+        obsClient.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: true });
+        obsClient.send('SetMute', { source: SOURCES.MIC, mute: false });
+      }
       return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_CAM}`: {
-      const properties = await obsClient.send('GetSceneItemProperties', { item: { name: SOURCES.WEBCAM } });
-      const { visible } = properties;
-      obsClient.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: !visible });
+      if (await isOBSClientConnected()) {
+        const properties = await obsClient.send('GetSceneItemProperties', { item: { name: SOURCES.WEBCAM } });
+        const { visible } = properties;
+        obsClient.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: !visible });
+      }
       return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_MUTE_MIC}`: {
-      obsClient.send('ToggleMute', { source: SOURCES.MIC });
+      if (await isOBSClientConnected()) {
+        obsClient.send('ToggleMute', { source: SOURCES.MIC });
+      }
       return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.CHANGE_OVERLAY_COLOR}`: {
-      let numTimes = messageParts[1] ? parseInt(messageParts[1]) : 1;
+      if (await isOBSClientConnected()) {
+        let numTimes = messageParts[1] ? parseInt(messageParts[1]) : 1;
 
-      if (numTimes < 0) {
-        numTimes = Math.abs(numTimes);
-      }
+        if (numTimes < 0) {
+          numTimes = Math.abs(numTimes);
+        }
 
-      if (numTimes > 1000) {
-        numTimes = 1000;
-      }
+        if (numTimes > 1000) {
+          numTimes = 1000;
+        }
 
-      obsClient.send('SetSourceFilterVisibility', {
-        sourceName: SOURCES.WEBCAM,
-        filterName: 'Color Correction',
-        filterEnabled: true
-      });
-
-      function setColorCorrectionToRandomColor() {
-        const randomColor = getRandomColor();
-        obsClient.send('SetSourceFilterSettings', {
+        obsClient.send('SetSourceFilterVisibility', {
           sourceName: SOURCES.WEBCAM,
           filterName: 'Color Correction',
-          filterSettings: {
-            color: randomColor
-          }
+          filterEnabled: true
         });
-      };
 
-      const rate = 1000 / numTimes;
-      for (let i = 0; i < numTimes; i++) {
-        setTimeout(setColorCorrectionToRandomColor, rate * i);
+        function setColorCorrectionToRandomColor() {
+          const randomColor = getRandomColor();
+          obsClient.send('SetSourceFilterSettings', {
+            sourceName: SOURCES.WEBCAM,
+            filterName: 'Color Correction',
+            filterSettings: {
+              color: randomColor
+            }
+          });
+        };
+
+        const rate = 1000 / numTimes;
+        for (let i = 0; i < numTimes; i++) {
+          setTimeout(setColorCorrectionToRandomColor, rate * i);
+        }
       }
       return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_AQUA}`: {
-      const properties = await obsClient.send('GetSceneItemProperties', { item: { name: SOURCES.AQUA } });
-      const { visible } = properties;
-      obsClient.send('SetSceneItemRender', { source: SOURCES.AQUA, render: !visible });
+      if (await isOBSClientConnected()) {
+        const properties = await obsClient.send('GetSceneItemProperties', { item: { name: SOURCES.AQUA } });
+        const { visible } = properties;
+        obsClient.send('SetSceneItemRender', { source: SOURCES.AQUA, render: !visible });
+      }
       return true;
     }
     default: {

@@ -1,5 +1,4 @@
 const { COMMAND_SPACER } = require('../constants/commands');
-const { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } = require('../constants/firebase');
 
 function getRandomColor() {
   return (Math.random() * 4294967296) >>> 0;
