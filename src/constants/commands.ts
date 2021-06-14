@@ -7,7 +7,7 @@ export const ADMIN_USER = 'bastulos';
 export const ADMIN_COMMANDS = {
   TOGGLE_COMMANDS_ACTIVE: 'active',
   ADD_COMMAND: 'add',
-  REMOVE_COMMAND: 'rm',
+  REMOVE_COMMAND: 'rm'
 };
 
 export const OBS_COMMANDS = {

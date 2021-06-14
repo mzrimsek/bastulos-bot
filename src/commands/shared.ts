@@ -36,7 +36,9 @@ async function handleHelpCommand(messageParts, printFunc, clients, ...extraComma
     const userCommandList = userCommands.map(userCommand => userCommand.command);
     const allCommandList = [...userCommandList, ...extraCommandsList, HELP_COMMAND];
 
-    const helpMessageList = allCommandList.map(command => `${COMMAND_PREFACE}${command}`).join(', ');
+    const helpMessageList = allCommandList
+      .map(command => `${COMMAND_PREFACE}${command}`)
+      .join(', ');
     printFunc(`Here are the available commands: \n${helpMessageList}`);
 
     return true;

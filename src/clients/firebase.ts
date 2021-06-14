@@ -23,7 +23,4 @@ try {
 const commandsCollection = firestore.collection(COMMANDS_COLLECTION);
 const trackingWordsCollection = firestore.collection(WORD_TRACKING_COLLECTION);
 
-export const collections = [
-  commandsCollection,
-  trackingWordsCollection
-];
+export const collections = [commandsCollection, trackingWordsCollection];
