@@ -1,7 +1,5 @@
 import * as tmi from 'tmi.js';
 import * as OBSWebSocket from 'obs-websocket-js';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as admin from 'firebase-admin';
 import * as discord from 'discord.js';
 import * as mqtt from 'mqtt';
 
