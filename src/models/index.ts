@@ -1,7 +1,9 @@
-import * as tmi from 'tmi.js';
+import { ChatClient } from 'twitch-chat-client';
+import { PubSubClient } from 'twitch-pubsub-client';
+import { firestore } from 'firebase-admin';
 import * as OBSWebSocket from 'obs-websocket-js';
-import * as discord from 'discord.js';
-import * as mqtt from 'mqtt';
+import { Client, Message } from 'discord.js';
+import { MqttClient } from 'mqtt';
 
 export interface Command {
   command: string;
@@ -12,10 +14,10 @@ export interface TrackedWord {
   count: number;
 }
 
-export type FirestoreCollection<T> = FirebaseFirestore.CollectionReference<T>;
+export type FirestoreCollection<T> = firestore.CollectionReference<T>;
 
 export interface FirebaseClient {
-  firestore: FirebaseFirestore.Firestore;
+  firestore: firestore.Firestore;
   collections: {
     commandsCollection: FirestoreCollection<Command>;
     trackingWordsCollection: FirestoreCollection<TrackedWord>;
@@ -23,11 +25,12 @@ export interface FirebaseClient {
 }
 
 export interface Clients {
-  twitchClient: tmi.Client;
+  twitchChatClient: ChatClient;
+  twitchPubSubClient: PubSubClient;
   obsClient: OBSWebSocket;
   firebase: FirebaseClient;
-  discordClient: discord.Client;
-  mqttClient: mqtt.MqttClient;
+  discordClient: Client;
+  mqttClient: MqttClient;
 }
 
-export type PrintFunc = (content: string) => Promise<[string] | discord.Message>;
+export type PrintFunc = (content: string) => Promise<void | Message>;

@@ -1,4 +1,6 @@
+import { getEnvValue } from '../utils';
+
 export default {
-  address: process.env.OBS_URL,
-  password: process.env.OBS_PASSWORD
+  address: getEnvValue('OBS_URL'),
+  password: getEnvValue('OBS_PASSWORD')
 };

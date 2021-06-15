@@ -1,6 +1,7 @@
+import { firestore } from 'firebase-admin';
 import { logger } from '../config';
 import { COMMAND_SPACER } from '../constants';
-import { Command, FirebaseClient } from '../models';
+import { Command, TrackedWord, FirebaseClient } from '../models';
 
 export function getRandomColor(): number {
   return (Math.random() * 4294967296) >>> 0;
@@ -26,7 +27,7 @@ export async function loadUserCommands(firebase: FirebaseClient): Promise<Comman
 
   const commandsSnapshot = await commandsCollection.get();
   logger.info('User commands loaded');
-  return commandsSnapshot.docs.map(doc => doc.data());
+  return commandsSnapshot.docs.map((doc: firestore.QueryDocumentSnapshot<Command>) => doc.data());
 }
 
 export async function loadTrackingPhrases(firebase: FirebaseClient): Promise<string[]> {
@@ -35,5 +36,13 @@ export async function loadTrackingPhrases(firebase: FirebaseClient): Promise<str
 
   const wordsSnapshot = await trackingWordsCollection.get();
   logger.info('Tracking words loaded');
-  return wordsSnapshot.docs.map(doc => doc.id);
+  return wordsSnapshot.docs.map((doc: firestore.QueryDocumentSnapshot<TrackedWord>) => doc.id);
+}
+
+export function getEnvValue(key: string): string {
+  const value = process.env[key];
+  if (value) {
+    return value;
+  }
+  throw new Error(`${key} environment variable missing`);
 }

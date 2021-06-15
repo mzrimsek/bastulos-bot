@@ -1,3 +1,5 @@
+import { getEnvValue } from '../utils';
+
 export default {
-  address: process.env.MQTT_BROKER_ADDRESS
+  address: getEnvValue('MQTT_BROKER_ADDRESS')
 };
