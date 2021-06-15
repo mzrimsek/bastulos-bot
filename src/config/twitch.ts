@@ -1,7 +1,15 @@
 const channelKeys = Object.keys(process.env).filter(key => key.match(/TWITCH_CHANNEL_\d/g));
-const channels = channelKeys.map(key => process.env[key]);
+const channels = channelKeys
+  .map(key => {
+    const channel = process.env[key];
+    if (channel) {
+      return channel;
+    }
+    return '';
+  })
+  .filter(channel => channel !== '');
 
-const config = {
+export default {
   connection: {
     reconnect: true
   },
@@ -11,5 +19,3 @@ const config = {
   },
   channels
 };
-
-module.exports = config;

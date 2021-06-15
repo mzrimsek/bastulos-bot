@@ -1,8 +1,14 @@
-const { COMMAND_PREFACE, HELP_COMMAND } = require('../constants/commands');
+import { logger } from '../config';
+import { COMMAND_PREFACE, HELP_COMMAND } from '../constants/commands';
+import { Clients, PrintFunc } from '../models';
+import { replaceRequestingUserInMessage, loadUserCommands } from '../utils';
 
-const { replaceRequestingUserInMessage, loadUserCommands } = require('../utils');
-
-async function handleUserCommand(messageParts, username, printFunc, clients) {
+export async function handleUserCommand(
+  messageParts: string[],
+  username: string,
+  printFunc: PrintFunc,
+  clients: Clients
+): Promise<boolean> {
   const command = messageParts[0].toLowerCase();
 
   const { firebase } = clients;
@@ -20,7 +26,12 @@ async function handleUserCommand(messageParts, username, printFunc, clients) {
   return false;
 }
 
-async function handleHelpCommand(messageParts, printFunc, clients, ...extraCommandsDefinitions) {
+export async function handleHelpCommand(
+  messageParts: string[],
+  printFunc: PrintFunc,
+  clients: Clients,
+  ...extraCommandsDefinitions: Record<string, string>[]
+): Promise<boolean> {
   const command = messageParts[0].toLowerCase();
 
   if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
@@ -31,12 +42,14 @@ async function handleHelpCommand(messageParts, printFunc, clients, ...extraComma
       const extraCommandKeys = Object.keys(extraCommandsDefinition);
       return extraCommandKeys.map(commandKey => extraCommandsDefinition[commandKey]);
     });
-    const extraCommandsList = [].concat(...extraCommandsLists);
+    const extraCommandsList: string[] = extraCommandsLists.flat();
 
     const userCommandList = userCommands.map(userCommand => userCommand.command);
     const allCommandList = [...userCommandList, ...extraCommandsList, HELP_COMMAND];
 
-    const helpMessageList = allCommandList.map(command => `${COMMAND_PREFACE}${command}`).join(', ');
+    const helpMessageList = allCommandList
+      .map(command => `${COMMAND_PREFACE}${command}`)
+      .join(', ');
     printFunc(`Here are the available commands: \n${helpMessageList}`);
 
     return true;
@@ -44,8 +57,3 @@ async function handleHelpCommand(messageParts, printFunc, clients, ...extraComma
 
   return false;
 }
-
-module.exports = {
-  handleUserCommand,
-  handleHelpCommand
-};

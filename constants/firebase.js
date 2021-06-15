@@ -1,7 +1,0 @@
-const COMMANDS_COLLECTION = 'commands';
-const WORD_TRACKING_COLLECTION = 'wordTracking';
-
-module.exports = {
-  COMMANDS_COLLECTION,
-  WORD_TRACKING_COLLECTION
-};

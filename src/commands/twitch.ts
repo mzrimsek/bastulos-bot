@@ -1,12 +1,33 @@
-const obsConfig = require('../config/obs');
+import * as OBSWebSocket from 'obs-websocket-js';
+import { obsConfig, logger } from '../config';
+import {
+  COMMAND_PREFACE,
+  ADMIN_COMMANDS,
+  OBS_COMMANDS,
+  WORD_TRACKING_COMMANDS,
+  LIGHT_COMMANDS,
+  LIGHT_TOPICS,
+  SOURCES
+} from '../constants';
+import { Clients, PrintFunc } from '../models';
+import { getRandomColor, loadTrackingPhrases, getRandomInt } from '../utils';
 
-const { COMMAND_PREFACE, ADMIN_COMMANDS, OBS_COMMANDS, WORD_TRACKING_COMMANDS, LIGHT_COMMANDS } = require('../constants/commands');
-const { LIGHT_TOPICS } = require('../constants/mqtt');
-const { SOURCES } = require('../constants/obs');
+function setColorCorrectionToRandomColor(obsClient: OBSWebSocket) {
+  const randomColor = getRandomColor();
+  obsClient.send('SetSourceFilterSettings', {
+    sourceName: SOURCES.WEBCAM,
+    filterName: 'Color Correction',
+    filterSettings: {
+      color: randomColor
+    }
+  });
+}
 
-const { getRandomColor, loadTrackingPhrases, getRandomInt } = require('../utils');
-
-async function handleOBSCommand(messageParts, clients, obsConnected) {
+export async function handleOBSCommand(
+  messageParts: string[],
+  clients: Clients,
+  obsConnected: boolean
+): Promise<boolean> {
   const { obsClient } = clients;
 
   const isOBSClientConnected = async () => {
@@ -15,7 +36,7 @@ async function handleOBSCommand(messageParts, clients, obsConnected) {
         await obsClient.connect(obsConfig);
         return true;
       } catch {
-        logger.info('Unable to connect to OBSWebsocket')
+        logger.info('Unable to connect to OBSWebsocket');
         return false;
       }
     }
@@ -32,16 +53,24 @@ async function handleOBSCommand(messageParts, clients, obsConnected) {
           filterName: 'Color Correction',
           filterEnabled: false
         });
-        obsClient.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: true });
+        obsClient.send('SetSceneItemRender', {
+          source: SOURCES.WEBCAM,
+          render: true
+        });
         obsClient.send('SetMute', { source: SOURCES.MIC, mute: false });
       }
       return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_CAM}`: {
       if (await isOBSClientConnected()) {
-        const properties = await obsClient.send('GetSceneItemProperties', { item: { name: SOURCES.WEBCAM } });
+        const properties = await obsClient.send('GetSceneItemProperties', {
+          item: { name: SOURCES.WEBCAM }
+        });
         const { visible } = properties;
-        obsClient.send('SetSceneItemRender', { source: SOURCES.WEBCAM, render: !visible });
+        obsClient.send('SetSceneItemRender', {
+          source: SOURCES.WEBCAM,
+          render: !visible
+        });
       }
       return true;
     }
@@ -69,29 +98,25 @@ async function handleOBSCommand(messageParts, clients, obsConnected) {
           filterEnabled: true
         });
 
-        function setColorCorrectionToRandomColor() {
-          const randomColor = getRandomColor();
-          obsClient.send('SetSourceFilterSettings', {
-            sourceName: SOURCES.WEBCAM,
-            filterName: 'Color Correction',
-            filterSettings: {
-              color: randomColor
-            }
-          });
-        };
+        const setColorCorrection = () => setColorCorrectionToRandomColor(obsClient);
 
         const rate = 1000 / numTimes;
         for (let i = 0; i < numTimes; i++) {
-          setTimeout(setColorCorrectionToRandomColor, rate * i);
+          setTimeout(setColorCorrection, rate * i);
         }
       }
       return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_AQUA}`: {
       if (await isOBSClientConnected()) {
-        const properties = await obsClient.send('GetSceneItemProperties', { item: { name: SOURCES.AQUA } });
+        const properties = await obsClient.send('GetSceneItemProperties', {
+          item: { name: SOURCES.AQUA }
+        });
         const { visible } = properties;
-        obsClient.send('SetSceneItemRender', { source: SOURCES.AQUA, render: !visible });
+        obsClient.send('SetSceneItemRender', {
+          source: SOURCES.AQUA,
+          render: !visible
+        });
       }
       return true;
     }
@@ -101,7 +126,13 @@ async function handleOBSCommand(messageParts, clients, obsConnected) {
   }
 }
 
-function handleAdminCommand(messageParts, printFunc, commandsActive, commandsActiveUpdateFunc, clients) {
+export function handleAdminCommand(
+  messageParts: string[],
+  printFunc: PrintFunc,
+  commandsActive: boolean,
+  commandsActiveUpdateFunc: (newState: boolean) => void,
+  clients: Clients
+): boolean {
   const { firebase } = clients;
   const { collections } = firebase;
   const { commandsCollection } = collections;
@@ -114,8 +145,7 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
         printFunc('Bot commands are disabled!');
         logger.info('Twitch commands are disabled');
         commandsActiveUpdateFunc(false);
-      }
-      else {
+      } else {
         printFunc('Bot commands are enabled!');
         logger.info('Twitch commands are enabled');
         commandsActiveUpdateFunc(true);
@@ -125,24 +155,35 @@ function handleAdminCommand(messageParts, printFunc, commandsActive, commandsAct
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.ADD_COMMAND}`: {
       const newCommand = messageParts[1];
       const newMessage = messageParts.slice(2).join(' ');
-      commandsCollection.doc(newCommand).set({
-        command: newCommand,
-        message: newMessage
-      }).then(() => logger.info(`Command added: ${newCommand}`));
+      commandsCollection
+        .doc(newCommand)
+        .set({
+          command: newCommand,
+          message: newMessage
+        })
+        .then(() => logger.info(`Command added: ${newCommand}`));
       return true;
     }
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.REMOVE_COMMAND}`: {
       const commandToRemove = messageParts[1];
-      commandsCollection.doc(commandToRemove).delete().then(() => logger.info(`Command removed: ${commandToRemove}`));
+      commandsCollection
+        .doc(commandToRemove)
+        .delete()
+        .then(() => logger.info(`Command removed: ${commandToRemove}`));
       return true;
     }
     default: {
       return false;
     }
   }
-};
+}
 
-async function handleTwitchUserCommand(messageParts, username, printFunc, clients) {
+export async function handleTwitchUserCommand(
+  messageParts: string[],
+  username: string,
+  printFunc: PrintFunc,
+  clients: Clients
+): Promise<boolean> {
   const { firebase, mqttClient } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
@@ -218,7 +259,7 @@ async function handleTwitchUserCommand(messageParts, username, printFunc, client
   }
 }
 
-async function handleModCommand(messageParts, printFunc, clients) {
+export async function handleModCommand(messageParts: string[], clients: Clients): Promise<boolean> {
   const { firebase } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
@@ -231,9 +272,12 @@ async function handleModCommand(messageParts, printFunc, clients) {
 
       const newPhrase = messageParts.slice(1).join('_');
       if (newPhrase && !trackingPhrases.includes(newPhrase)) {
-        trackingWordsCollection.doc(newPhrase).set({
-          count: 0
-        }).then(() => logger.info(`Tracking word added: ${newPhrase}`));
+        trackingWordsCollection
+          .doc(newPhrase)
+          .set({
+            count: 0
+          })
+          .then(() => logger.info(`Tracking word added: ${newPhrase}`));
       }
       return true;
     }
@@ -242,7 +286,10 @@ async function handleModCommand(messageParts, printFunc, clients) {
 
       const phraseToRemove = messageParts.slice(1).join('_');
       if (phraseToRemove && trackingPhrases.includes(phraseToRemove)) {
-        trackingWordsCollection.doc(phraseToRemove).delete().then(() => logger.info(`Tracking word removed: ${phraseToRemove}`));
+        trackingWordsCollection
+          .doc(phraseToRemove)
+          .delete()
+          .then(() => logger.info(`Tracking word removed: ${phraseToRemove}`));
       }
       return true;
     }
@@ -251,7 +298,10 @@ async function handleModCommand(messageParts, printFunc, clients) {
 
       const phraseToClear = messageParts.slice(1).join('_');
       if (phraseToClear && trackingPhrases.includes(phraseToClear)) {
-        trackingWordsCollection.doc(phraseToClear).update('count', 0).then(() => logger.info(`Tracking word cleared: ${phraseToClear}`));
+        trackingWordsCollection
+          .doc(phraseToClear)
+          .update('count', 0)
+          .then(() => logger.info(`Tracking word cleared: ${phraseToClear}`));
       }
       return true;
     }
@@ -264,14 +314,18 @@ async function handleModCommand(messageParts, printFunc, clients) {
       const hasCount = Number.isInteger(lastTokenAsNum);
       const count = hasCount ? Number.parseInt(lastToken) : 1;
 
-      const phraseParts = hasCount ? messageParts.slice(1, messageParts.length - 1) : messageParts.slice(1);
+      const phraseParts = hasCount
+        ? messageParts.slice(1, messageParts.length - 1)
+        : messageParts.slice(1);
       const phraseToIncrement = phraseParts.join('_');
 
       if (phraseToIncrement && trackingPhrases.includes(phraseToIncrement)) {
         const documentRef = trackingWordsCollection.doc(phraseToIncrement);
         const document = await documentRef.get();
-        const currentCount = document.get('count');
-        documentRef.update('count', currentCount + count).then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));
+        const currentCount: number = document.get('count');
+        documentRef
+          .update('count', currentCount + count)
+          .then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));
       }
       return true;
     }
@@ -280,10 +334,3 @@ async function handleModCommand(messageParts, printFunc, clients) {
     }
   }
 }
-
-module.exports = {
-  handleOBSCommand,
-  handleAdminCommand,
-  handleModCommand,
-  handleTwitchUserCommand
-};
