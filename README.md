@@ -20,6 +20,7 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 ### General (work when triggered from both Twitch chat and Discord)
 
 - !help - displays help command (this shows different commands based on where it is triggered from)
+- Any of the commands added with the !add command are accessible in both locations
 
 ### General Twitch Only
 
@@ -41,10 +42,12 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 - !reset - reset face cam and mic changes back to default
 - !aqua - toggle Aqua visibility on scenes with her in them
 
-## Invite to Server
-
-https://discord.com/api/oauth2/authorize?client_id=772707347520946197&permissions=0&scope=bot
-
 ## Twitch Authentication
 
-Use [Twitch OAuth Authorization Code Flow](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#oauth-authorization-code-flow) to generate tokens, then build out the `tokens.json` file in a directory which will then be mounted to the volume in Docker.
+Authentication is done using the [Twitch OAuth Authorization Code Flow](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#oauth-authorization-code-flow).
+
+[This basic walkthrough](https://d-fischer.github.io/twitch-chat-client/docs/examples/basic-bot.html) explains the process, as well as how to get refreshing tokens obtained for the twitch-chat-client library. Currently tokens are just stored in a JSON file which is read from/written to when obtaining and refreshing access tokens. For local development the `tokens.json` file is read in using the `TWITCH_BOT_TOKENS_FILE_LOCATION` environment variable. When running from Docker, a directory containing the `tokens.json` file must be mounted as a volume to the `/var/bot` directory.
+
+## Invite to Discord Server
+
+https://discord.com/api/oauth2/authorize?client_id=772707347520946197&permissions=0&scope=bot
