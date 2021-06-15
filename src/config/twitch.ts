@@ -7,6 +7,5 @@ export default {
   channels,
   clientId: getEnvValue('TWITCH_APPLICATION_CLIENT_ID'),
   clientSecret: getEnvValue('TWITCH_APPLICATION_CLIENT_SECRET'),
-  botUserName: getEnvValue('TWITCH_BOT_USERNAME'),
-  tokensFileLocation: getEnvValue('TWITCH_BOT_TOKENS_FILE_LOCATION')
+  botUserName: getEnvValue('TWITCH_BOT_USERNAME')
 };

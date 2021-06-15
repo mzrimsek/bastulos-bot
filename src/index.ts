@@ -1,7 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
+import { Message } from 'discord.js';
 import {
-  twitchClient,
+  twitchChatClient,
+  twitchPubSubClient,
   obsClient,
   obsConnected,
   firestore,
@@ -9,7 +11,7 @@ import {
   discordClient,
   mqttClient
 } from './clients';
-import { discordConfig, logger } from './config';
+import { discordConfig, twitchConfig, logger } from './config';
 import { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } from './constants';
 import {
   handleAdminCommand,
@@ -23,7 +25,8 @@ import { Clients } from './models';
 import { randomlyPadContent } from './utils';
 
 const clients: Clients = {
-  twitchClient,
+  twitchChatClient,
+  twitchPubSubClient,
   obsClient,
   firebase: {
     firestore,
@@ -35,20 +38,22 @@ const clients: Clients = {
 
 let commandsActive = true;
 
-twitchClient.on('chat', async (channel, userInfo, message, self) => {
-  if (self) return; // ignore messages from the bot
+twitchChatClient.onMessage(async (channel: string, user: string, message: string) => {
+  if (user === twitchConfig.botUserName) return; // ignore messages from the bot
 
   if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
+  const mods = await twitchChatClient.getMods(channel);
+
   const messageParts = message.split(' ');
-  const username = `@${userInfo.username}`;
-  const printFunc = (content: string) => twitchClient.say(channel, randomlyPadContent(content));
+  const username = `@${user}`;
+  const printFunc = (content: string) => twitchChatClient.say(channel, randomlyPadContent(content));
   const commandsActiveUpdateFunc = (newState: boolean) => {
     commandsActive = newState;
   };
 
   try {
-    if (userInfo.username === ADMIN_USER) {
+    if (user === ADMIN_USER) {
       if (
         handleAdminCommand(
           messageParts,
@@ -61,7 +66,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
         return;
     }
 
-    if (userInfo.username === ADMIN_USER || userInfo.mod) {
+    if (user === ADMIN_USER || mods.includes(user)) {
       if (await handleModCommand(messageParts, clients)) return;
     }
 
@@ -77,7 +82,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
   }
 });
 
-discordClient.on('message', async message => {
+discordClient.on('message', async (message: Message) => {
   const member = await message.guild?.members.fetch(message.author);
   const isBastulosBot = member?.id === discordConfig.bot_user_id;
   const { content } = message;
