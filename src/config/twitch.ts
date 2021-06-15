@@ -1,21 +1,12 @@
+import { getEnvValue } from '../utils';
+
 const channelKeys = Object.keys(process.env).filter(key => key.match(/TWITCH_CHANNEL_\d/g));
-const channels = channelKeys
-  .map(key => {
-    const channel = process.env[key];
-    if (channel) {
-      return channel;
-    }
-    return '';
-  })
-  .filter(channel => channel !== '');
+const channels = channelKeys.map(key => getEnvValue(key));
 
 export default {
-  connection: {
-    reconnect: true
-  },
-  identity: {
-    username: 'bastulosbot',
-    password: `oauth:${process.env.TMI_TOKEN}`
-  },
-  channels
+  channels,
+  clientId: getEnvValue('TWITCH_APPLICATION_CLIENT_ID'),
+  clientSecret: getEnvValue('TWITCH_APPLICATION_CLIENT_SECRET'),
+  botUserName: getEnvValue('TWITCH_BOT_USERNAME'),
+  tokensFileLocation: getEnvValue('TWITCH_BOT_TOKENS_FILE_LOCATION')
 };
