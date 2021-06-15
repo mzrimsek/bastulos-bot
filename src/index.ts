@@ -78,8 +78,8 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
 });
 
 discordClient.on('message', async message => {
-  const member = await message.guild.members.fetch(message.author);
-  const isBastulosBot = member.id === discordConfig.bot_user_id;
+  const member = await message.guild?.members.fetch(message.author);
+  const isBastulosBot = member?.id === discordConfig.bot_user_id;
   const { content } = message;
 
   if (isBastulosBot) return; // ignore messages from the bot
@@ -87,7 +87,7 @@ discordClient.on('message', async message => {
   if (content[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
   const messageParts = content.split(' ');
-  const username = `<@!${member.user.id}>`;
+  const username = `<@!${member?.user.id}>`;
   const printFunc = (content: string) => message.channel.send(randomlyPadContent(content));
 
   try {
