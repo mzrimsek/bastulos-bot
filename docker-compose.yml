@@ -4,11 +4,14 @@ services:
   bot:
     image: ghcr.io/mzrimsek/bastulos-bot:latest
     container_name: bastulos_bot
+    volumes:
+      - /opt/bastulos-bot/tokens.json:tokens.json
     environment:
       - TWITCH_CHANNEL_1=bastulos
+      - TWITCH_APPLICATION_CLIENT_ID=${TWITCH_APPLICATION_CLIENT_ID}
+      - TWITCH_APPLICATION_CLIENT_SECRET=${TWITCH_APPLICATION_CLIENT_SECRET}
       - OBS_URL=${OBS_URL}
       - OBS_PASSWORD=${OBS_PASSWORD}
-      - TMI_TOKEN=${TMI_TOKEN}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
       - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
       - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
