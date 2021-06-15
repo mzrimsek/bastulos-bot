@@ -29,8 +29,8 @@ export const WORD_TRACKING_COMMANDS = {
 export const LIGHT_COMMANDS = {
   TURN_OFF: 'lightsoff',
   TURN_ON: 'lightson',
-  SET_COLOR: 'lightscol',
-  RANDOM_COLOR: 'lightsrand'
+  SET_COLOR: 'lights',
+  RANDOM_COLOR: 'lightsr'
 };
 
 export const HELP_COMMAND = 'help';

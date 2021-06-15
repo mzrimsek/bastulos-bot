@@ -26,12 +26,12 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 - !wordcount <word/phrase> - gets the tracked count of a word/phrase
 - !lightsoff - turns off the lights in stream room
 - !lightson - turns on the lights in stream room
-- !lightscol <color_name/R G B> - sets color of lights in stream room
+- !lights <color_name/R G B> - sets color of lights in stream room
   - color_name must be a [valid CSS3 color name](https://www.w3.org/wiki/CSS/Properties/color/keywords)
     - ex: !lightscol red
   - RGB value must be 3 numbers between 0 and 255
     - ex: !lightscol 255 0 0
-- !lightsrand - sets color of lights in stream room to random color
+- !lightsr - sets color of lights in stream room to random color
 
 ### OBS (only work when triggered from Twitch chat)
 
