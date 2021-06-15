@@ -11,7 +11,7 @@ import {
   discordClient,
   mqttClient
 } from './clients';
-import { discordConfig, twitchConfig, logger } from './config';
+import { discordConfig, logger } from './config';
 import { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS } from './constants';
 import {
   handleAdminCommand,
@@ -39,7 +39,7 @@ const clients: Clients = {
 let commandsActive = true;
 
 twitchChatClient.onMessage(async (channel: string, user: string, message: string) => {
-  if (user === twitchConfig.botUserName) return; // ignore messages from the bot
+  if (user === 'BastulosBot') return; // ignore messages from the bot
 
   if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
