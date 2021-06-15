@@ -44,3 +44,7 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 ## Invite to Server
 
 https://discord.com/api/oauth2/authorize?client_id=772707347520946197&permissions=0&scope=bot
+
+## Twitch Authentication
+
+Use [Twitch OAuth Authorization Code Flow](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#oauth-authorization-code-flow) to generate tokens, then build out the `tokens.json` file in a directory which will then be mounted to the volume in Docker.

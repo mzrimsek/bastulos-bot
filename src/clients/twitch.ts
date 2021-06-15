@@ -4,9 +4,9 @@ import { PubSubClient } from 'twitch-pubsub-client';
 import * as fs from 'fs';
 import { twitchConfig } from '../config';
 
-const { channels, clientId, clientSecret } = twitchConfig;
+const { channels, clientId, clientSecret, tokensLocation } = twitchConfig;
 
-const tokenData = JSON.parse(fs.readFileSync('tokens.json', 'utf-8'));
+const tokenData = JSON.parse(fs.readFileSync(tokensLocation, 'utf-8'));
 const authProvider = new RefreshableAuthProvider(
   new StaticAuthProvider(clientId, tokenData.accessToken),
   {
@@ -19,7 +19,7 @@ const authProvider = new RefreshableAuthProvider(
         refreshToken,
         expiryTimestamp: expiryDate === null ? null : expiryDate.getTime()
       };
-      fs.writeFileSync('tokens.json', JSON.stringify(newTokenData, null, 4), 'utf-8');
+      fs.writeFileSync(tokensLocation, JSON.stringify(newTokenData, null, 4), 'utf-8');
     }
   }
 );

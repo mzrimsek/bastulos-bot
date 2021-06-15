@@ -10,4 +10,6 @@ RUN npm install
 
 COPY . /usr/src/bot
 
+RUN mkdir -p /var/bot
+
 CMD ["npm", "start"]
