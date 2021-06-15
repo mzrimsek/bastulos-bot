@@ -26,9 +26,13 @@ export interface FirebaseClient {
   };
 }
 
+export interface TwitchPubSub {
+  twitchPubSubUserId: string;
+  twitchPubSubClient: PubSubClient;
+}
+
 export interface Clients {
   twitchChatClient: ChatClient;
-  twitchPubSubClient: PubSubClient;
   obsClient: OBSWebSocket;
   firebase: FirebaseClient;
   discordClient: Client;

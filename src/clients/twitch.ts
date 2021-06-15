@@ -3,8 +3,10 @@ import * as fs from 'fs';
 import { RefreshableAuthProvider, StaticAuthProvider } from 'twitch-auth';
 import { logger, twitchConfig } from 'src/config';
 
+import { ApiClient } from 'twitch/lib';
 import { ChatClient } from 'twitch-chat-client';
 import { PubSubClient } from 'twitch-pubsub-client';
+import { TwitchPubSub } from 'src/models';
 
 const { channels, clientId, clientSecret, tokensLocation } = twitchConfig;
 
@@ -37,4 +39,15 @@ export const twitchChatClient = new ChatClient(authProvider, { channels });
 twitchChatClient.connect();
 twitchChatClient.onConnect(() => logger.info('Connected to Twitch Chat'));
 
-export const twitchPubSubClient = new PubSubClient();
+export async function getTwitchPubSubClient(): Promise<TwitchPubSub> {
+  const apiClient = new ApiClient({ authProvider });
+  const twitchPubSubClient = new PubSubClient();
+
+  const twitchPubSubUserId = await twitchPubSubClient.registerUserListener(
+    apiClient
+  );
+  return {
+    twitchPubSubUserId,
+    twitchPubSubClient
+  };
+}

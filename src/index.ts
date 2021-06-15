@@ -8,15 +8,16 @@ import {
   LIGHT_COMMANDS,
   OBS_COMMANDS
 } from 'src/constants';
+import { Clients, TwitchPubSub } from 'src/models';
 import {
   collections,
   discordClient,
   firestore,
+  getTwitchPubSubClient,
   mqttClient,
   obsClient,
   obsConnected,
-  twitchChatClient,
-  twitchPubSubClient
+  twitchChatClient
 } from 'src/clients';
 import { discordConfig, logger } from 'src/config';
 import {
@@ -28,13 +29,12 @@ import {
   handleUserCommand
 } from 'src/commands';
 
-import { Clients } from 'src/models';
 import { Message } from 'discord.js';
+import { PubSubRedemptionMessage } from 'twitch-pubsub-client/lib';
 import { randomlyPadContent } from 'src/utils';
 
 const clients: Clients = {
   twitchChatClient,
-  twitchPubSubClient,
   obsClient,
   firebase: {
     firestore,
@@ -109,6 +109,17 @@ twitchChatClient.onMessage(
     }
   }
 );
+
+getTwitchPubSubClient().then((twitchPubSub: TwitchPubSub) => {
+  const { twitchPubSubUserId, twitchPubSubClient } = twitchPubSub;
+
+  twitchPubSubClient.onRedemption(
+    twitchPubSubUserId,
+    (message: PubSubRedemptionMessage) => {
+      logger.info(message);
+    }
+  );
+});
 
 discordClient.on('message', async (message: Message) => {
   const member = await message.guild?.members.fetch(message.author);
