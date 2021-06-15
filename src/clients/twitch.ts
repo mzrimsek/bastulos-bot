@@ -1,8 +1,10 @@
+import * as fs from 'fs';
+
 import { RefreshableAuthProvider, StaticAuthProvider } from 'twitch-auth';
+import { logger, twitchConfig } from '../config';
+
 import { ChatClient } from 'twitch-chat-client';
 import { PubSubClient } from 'twitch-pubsub-client';
-import * as fs from 'fs';
-import { logger, twitchConfig } from '../config';
 
 const { channels, clientId, clientSecret, tokensLocation } = twitchConfig;
 
@@ -12,14 +14,21 @@ const authProvider = new RefreshableAuthProvider(
   {
     clientSecret,
     refreshToken: tokenData.refreshToken,
-    expiry: tokenData.expiryTimestamp === null ? null : new Date(tokenData.expiryTimestamp),
+    expiry:
+      tokenData.expiryTimestamp === null
+        ? null
+        : new Date(tokenData.expiryTimestamp),
     onRefresh: async ({ accessToken, refreshToken, expiryDate }) => {
       const newTokenData = {
         accessToken,
         refreshToken,
         expiryTimestamp: expiryDate === null ? null : expiryDate.getTime()
       };
-      fs.writeFileSync(tokensLocation, JSON.stringify(newTokenData, null, 4), 'utf-8');
+      fs.writeFileSync(
+        tokensLocation,
+        JSON.stringify(newTokenData, null, 4),
+        'utf-8'
+      );
     }
   }
 );

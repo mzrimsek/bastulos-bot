@@ -1,4 +1,5 @@
 import * as OBSWebSocket from 'obs-websocket-js';
+
 import { logger } from '../config';
 
 export let obsConnected = false;

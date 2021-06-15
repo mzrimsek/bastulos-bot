@@ -1,7 +1,8 @@
 import * as admin from 'firebase-admin';
-import { firebaseConfig, logger } from '../config';
+
 import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from '../constants';
 import { Command, FirestoreCollection, TrackedWord } from '../models';
+import { firebaseConfig, logger } from '../config';
 
 const firestoreSettings = {
   timestampsInSnapshots: true
@@ -30,15 +31,18 @@ const commandConverter: FirebaseFirestore.FirestoreDataConverter<Command> = {
   }
 };
 
-const trackingWordConverter: FirebaseFirestore.FirestoreDataConverter<TrackedWord> = {
-  toFirestore(trackedWord: TrackedWord): FirebaseFirestore.DocumentData {
-    return { count: trackedWord.count };
-  },
-  fromFirestore(snapshot: FirebaseFirestore.QueryDocumentSnapshot): TrackedWord {
-    const data = snapshot.data();
-    return { count: data.count };
-  }
-};
+const trackingWordConverter: FirebaseFirestore.FirestoreDataConverter<TrackedWord> =
+  {
+    toFirestore(trackedWord: TrackedWord): FirebaseFirestore.DocumentData {
+      return { count: trackedWord.count };
+    },
+    fromFirestore(
+      snapshot: FirebaseFirestore.QueryDocumentSnapshot
+    ): TrackedWord {
+      const data = snapshot.data();
+      return { count: data.count };
+    }
+  };
 
 const commandsCollection: FirestoreCollection<Command> = firestore
   .collection(COMMANDS_COLLECTION)

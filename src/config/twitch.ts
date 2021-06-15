@@ -1,6 +1,8 @@
 import { getEnvValue } from '../utils';
 
-const channelKeys = Object.keys(process.env).filter(key => key.match(/TWITCH_CHANNEL_\d/g));
+const channelKeys = Object.keys(process.env).filter(key =>
+  key.match(/TWITCH_CHANNEL_\d/g)
+);
 const channels = channelKeys.map(key => getEnvValue(key));
 
 export default {
