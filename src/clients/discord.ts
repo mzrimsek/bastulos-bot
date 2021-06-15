@@ -1,6 +1,6 @@
 import * as discord from 'discord.js';
 
-import { discordConfig, logger } from '../config';
+import { discordConfig, logger } from 'src/config';
 
 export const discordClient = new discord.Client();
 discordClient.login(discordConfig.token);

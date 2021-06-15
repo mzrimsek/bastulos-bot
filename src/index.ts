@@ -7,7 +7,7 @@ import {
   COMMAND_PREFACE,
   LIGHT_COMMANDS,
   OBS_COMMANDS
-} from './constants';
+} from 'src/constants';
 import {
   collections,
   discordClient,
@@ -17,8 +17,8 @@ import {
   obsConnected,
   twitchChatClient,
   twitchPubSubClient
-} from './clients';
-import { discordConfig, logger } from './config';
+} from 'src/clients';
+import { discordConfig, logger } from 'src/config';
 import {
   handleAdminCommand,
   handleHelpCommand,
@@ -26,11 +26,11 @@ import {
   handleOBSCommand,
   handleTwitchUserCommand,
   handleUserCommand
-} from './commands';
+} from 'src/commands';
 
-import { Clients } from './models';
+import { Clients } from 'src/models';
 import { Message } from 'discord.js';
-import { randomlyPadContent } from './utils';
+import { randomlyPadContent } from 'src/utils';
 
 const clients: Clients = {
   twitchChatClient,

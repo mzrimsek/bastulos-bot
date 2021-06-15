@@ -1,6 +1,6 @@
-import { COMMAND_PREFACE, HELP_COMMAND } from '../constants/commands';
-import { Clients, PrintFunc } from '../models';
-import { loadUserCommands, replaceRequestingUserInMessage } from '../utils';
+import { COMMAND_PREFACE, HELP_COMMAND } from 'src/constants';
+import { Clients, PrintFunc } from 'src/models';
+import { loadUserCommands, replaceRequestingUserInMessage } from 'src/utils';
 
 import { logger } from '../config';
 

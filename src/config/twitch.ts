@@ -1,4 +1,4 @@
-import { getEnvValue } from '../utils';
+import { getEnvValue } from 'src/utils';
 
 const channelKeys = Object.keys(process.env).filter(key =>
   key.match(/TWITCH_CHANNEL_\d/g)

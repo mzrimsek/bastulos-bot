@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 import { RefreshableAuthProvider, StaticAuthProvider } from 'twitch-auth';
-import { logger, twitchConfig } from '../config';
+import { logger, twitchConfig } from 'src/config';
 
 import { ChatClient } from 'twitch-chat-client';
 import { PubSubClient } from 'twitch-pubsub-client';
