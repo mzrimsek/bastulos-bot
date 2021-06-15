@@ -259,11 +259,7 @@ export async function handleTwitchUserCommand(
   }
 }
 
-export async function handleModCommand(
-  messageParts: string[],
-  printFunc: PrintFunc,
-  clients: Clients
-): Promise<boolean> {
+export async function handleModCommand(messageParts: string[], clients: Clients): Promise<boolean> {
   const { firebase } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;

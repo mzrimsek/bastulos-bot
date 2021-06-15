@@ -42,7 +42,7 @@ export async function handleHelpCommand(
       const extraCommandKeys = Object.keys(extraCommandsDefinition);
       return extraCommandKeys.map(commandKey => extraCommandsDefinition[commandKey]);
     });
-    const extraCommandsList: string[] = [].concat(...extraCommandsLists);
+    const extraCommandsList: string[] = extraCommandsLists.flat();
 
     const userCommandList = userCommands.map(userCommand => userCommand.command);
     const allCommandList = [...userCommandList, ...extraCommandsList, HELP_COMMAND];

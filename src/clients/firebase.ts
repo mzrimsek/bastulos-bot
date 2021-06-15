@@ -16,14 +16,9 @@ admin.initializeApp({
   databaseURL: firebaseConfig.database_url
 });
 
-export let firestore: FirebaseFirestore.Firestore = null;
-try {
-  firestore = admin.firestore();
-  firestore.settings(firestoreSettings);
-  logger.info('Connection to Firebase established');
-} catch {
-  logger.info('Failed to connect to Firebase');
-}
+export const firestore: FirebaseFirestore.Firestore = admin.firestore();
+firestore.settings(firestoreSettings);
+logger.info('Connection to Firebase established');
 
 const commandConverter: FirebaseFirestore.FirestoreDataConverter<Command> = {
   toFirestore(command: Command): FirebaseFirestore.DocumentData {

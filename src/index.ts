@@ -62,7 +62,7 @@ twitchClient.on('chat', async (channel, userInfo, message, self) => {
     }
 
     if (userInfo.username === ADMIN_USER || userInfo.mod) {
-      if (await handleModCommand(messageParts, printFunc, clients)) return;
+      if (await handleModCommand(messageParts, clients)) return;
     }
 
     if (!commandsActive) return;
