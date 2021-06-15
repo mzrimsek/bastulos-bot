@@ -2,7 +2,7 @@ import { RefreshableAuthProvider, StaticAuthProvider } from 'twitch-auth';
 import { ChatClient } from 'twitch-chat-client';
 import { PubSubClient } from 'twitch-pubsub-client';
 import * as fs from 'fs';
-import { twitchConfig } from '../config';
+import { logger, twitchConfig } from '../config';
 
 const { channels, clientId, clientSecret, tokensLocation } = twitchConfig;
 
@@ -26,5 +26,6 @@ const authProvider = new RefreshableAuthProvider(
 
 export const twitchChatClient = new ChatClient(authProvider, { channels });
 twitchChatClient.connect();
+twitchChatClient.onConnect(() => logger.info('Connected to Twitch Chat'));
 
 export const twitchPubSubClient = new PubSubClient();
