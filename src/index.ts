@@ -110,7 +110,7 @@ twitchChatClient.onMessage(
   }
 );
 
-getTwitchPubSubClient().then((twitchPubSub: TwitchPubSub) => {
+getTwitchPubSubClient().then(async (twitchPubSub: TwitchPubSub) => {
   const { twitchPubSubUserId, twitchPubSubClient } = twitchPubSub;
 
   twitchPubSubClient.onRedemption(

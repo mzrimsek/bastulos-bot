@@ -46,19 +46,8 @@ export async function getTwitchPubSubClient(): Promise<TwitchPubSub> {
   const twitchPubSubClient = new PubSubClient();
 
   try {
-    const channelUser = await apiClient.helix.users.getUserByName(channel);
-
-    if (!channelUser) {
-      const error = 'Unable to fetch channel user';
-      logger.error(error);
-      throw new Error(error);
-    }
-
-    const twitchPubSubUserId = channelUser.id;
-
-    await twitchPubSubClient.registerUserListener(
-      apiClient,
-      twitchPubSubUserId
+    const twitchPubSubUserId = await twitchPubSubClient.registerUserListener(
+      apiClient
     );
 
     logger.info('Twitch PubSub Client Initialized');
