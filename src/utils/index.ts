@@ -1,7 +1,8 @@
+import { Command, FirebaseClient, TrackedWord } from '../models';
+
+import { COMMAND_SPACER } from '../constants';
 import { firestore } from 'firebase-admin';
 import { logger } from '../config';
-import { COMMAND_SPACER } from '../constants';
-import { Command, TrackedWord, FirebaseClient } from '../models';
 
 export function getRandomColor(): number {
   return (Math.random() * 4294967296) >>> 0;
@@ -11,7 +12,10 @@ export function getRandomInt(max: number, offset = 0): number {
   return Math.floor(Math.random() * max) + offset;
 }
 
-export function replaceRequestingUserInMessage(username: string, command: string): string {
+export function replaceRequestingUserInMessage(
+  username: string,
+  command: string
+): string {
   return command.replace('{user}', username);
 }
 
@@ -21,22 +25,30 @@ export function randomlyPadContent(content: string): string {
   return `${content}${padding}`;
 }
 
-export async function loadUserCommands(firebase: FirebaseClient): Promise<Command[]> {
+export async function loadUserCommands(
+  firebase: FirebaseClient
+): Promise<Command[]> {
   const { collections } = firebase;
   const { commandsCollection } = collections;
 
   const commandsSnapshot = await commandsCollection.get();
   logger.info('User commands loaded');
-  return commandsSnapshot.docs.map((doc: firestore.QueryDocumentSnapshot<Command>) => doc.data());
+  return commandsSnapshot.docs.map(
+    (doc: firestore.QueryDocumentSnapshot<Command>) => doc.data()
+  );
 }
 
-export async function loadTrackingPhrases(firebase: FirebaseClient): Promise<string[]> {
+export async function loadTrackingPhrases(
+  firebase: FirebaseClient
+): Promise<string[]> {
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
 
   const wordsSnapshot = await trackingWordsCollection.get();
   logger.info('Tracking words loaded');
-  return wordsSnapshot.docs.map((doc: firestore.QueryDocumentSnapshot<TrackedWord>) => doc.id);
+  return wordsSnapshot.docs.map(
+    (doc: firestore.QueryDocumentSnapshot<TrackedWord>) => doc.id
+  );
 }
 
 export function getEnvValue(key: string): string {

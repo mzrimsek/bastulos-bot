@@ -1,16 +1,17 @@
 import * as OBSWebSocket from 'obs-websocket-js';
-import { obsConfig, logger } from '../config';
+
 import {
-  COMMAND_PREFACE,
   ADMIN_COMMANDS,
-  OBS_COMMANDS,
-  WORD_TRACKING_COMMANDS,
+  COMMAND_PREFACE,
   LIGHT_COMMANDS,
   LIGHT_TOPICS,
-  SOURCES
+  OBS_COMMANDS,
+  SOURCES,
+  WORD_TRACKING_COMMANDS
 } from '../constants';
 import { Clients, PrintFunc } from '../models';
-import { getRandomColor, loadTrackingPhrases, getRandomInt } from '../utils';
+import { getRandomColor, getRandomInt, loadTrackingPhrases } from '../utils';
+import { logger, obsConfig } from '../config';
 
 function setColorCorrectionToRandomColor(obsClient: OBSWebSocket) {
   const randomColor = getRandomColor();
@@ -98,7 +99,8 @@ export async function handleOBSCommand(
           filterEnabled: true
         });
 
-        const setColorCorrection = () => setColorCorrectionToRandomColor(obsClient);
+        const setColorCorrection = () =>
+          setColorCorrectionToRandomColor(obsClient);
 
         const rate = 1000 / numTimes;
         for (let i = 0; i < numTimes; i++) {
@@ -259,7 +261,10 @@ export async function handleTwitchUserCommand(
   }
 }
 
-export async function handleModCommand(messageParts: string[], clients: Clients): Promise<boolean> {
+export async function handleModCommand(
+  messageParts: string[],
+  clients: Clients
+): Promise<boolean> {
   const { firebase } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
@@ -325,7 +330,9 @@ export async function handleModCommand(messageParts: string[], clients: Clients)
         const currentCount: number = document.get('count');
         documentRef
           .update('count', currentCount + count)
-          .then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));
+          .then(() =>
+            logger.info(`Tracking word incremented: ${phraseToIncrement}`)
+          );
       }
       return true;
     }

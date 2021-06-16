@@ -1,9 +1,11 @@
+import * as OBSWebSocket from 'obs-websocket-js';
+
+import { Client, Message } from 'discord.js';
+
 import { ChatClient } from 'twitch-chat-client';
+import { MqttClient } from 'mqtt';
 import { PubSubClient } from 'twitch-pubsub-client';
 import { firestore } from 'firebase-admin';
-import * as OBSWebSocket from 'obs-websocket-js';
-import { Client, Message } from 'discord.js';
-import { MqttClient } from 'mqtt';
 
 export interface Command {
   command: string;
@@ -24,9 +26,13 @@ export interface FirebaseClient {
   };
 }
 
+export interface TwitchPubSub {
+  twitchPubSubUserId: string;
+  twitchPubSubClient: PubSubClient;
+}
+
 export interface Clients {
   twitchChatClient: ChatClient;
-  twitchPubSubClient: PubSubClient;
   obsClient: OBSWebSocket;
   firebase: FirebaseClient;
   discordClient: Client;

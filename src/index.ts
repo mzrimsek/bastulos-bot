@@ -1,32 +1,40 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
-import { Message } from 'discord.js';
+
 import {
-  twitchChatClient,
-  twitchPubSubClient,
-  obsClient,
-  obsConnected,
-  firestore,
+  ADMIN_USER,
+  BOT_NAME,
+  COMMAND_PREFACE,
+  LIGHT_COMMANDS,
+  OBS_COMMANDS
+} from './constants';
+import { Clients, TwitchPubSub } from './models';
+import {
   collections,
   discordClient,
-  mqttClient
+  firestore,
+  getTwitchPubSubClient,
+  mqttClient,
+  obsClient,
+  obsConnected,
+  twitchChatClient
 } from './clients';
 import { discordConfig, logger } from './config';
-import { COMMAND_PREFACE, ADMIN_USER, OBS_COMMANDS, LIGHT_COMMANDS, BOT_NAME } from './constants';
 import {
   handleAdminCommand,
-  handleOBSCommand,
+  handleHelpCommand,
   handleModCommand,
+  handleOBSCommand,
   handleTwitchUserCommand,
-  handleUserCommand,
-  handleHelpCommand
+  handleUserCommand
 } from './commands';
-import { Clients } from './models';
+
+import { Message } from 'discord.js';
+import { PubSubRedemptionMessage } from 'twitch-pubsub-client/lib';
 import { randomlyPadContent } from './utils';
 
 const clients: Clients = {
   twitchChatClient,
-  twitchPubSubClient,
   obsClient,
   firebase: {
     firestore,
@@ -38,48 +46,79 @@ const clients: Clients = {
 
 let commandsActive = true;
 
-twitchChatClient.onMessage(async (channel: string, user: string, message: string) => {
-  if (user === BOT_NAME) return; // ignore messages from the bot
+twitchChatClient.onMessage(
+  async (channel: string, user: string, message: string) => {
+    if (user === BOT_NAME) return; // ignore messages from the bot
 
-  if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
+    if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
-  const mods = await twitchChatClient.getMods(channel);
+    const mods = await twitchChatClient.getMods(channel);
 
-  const messageParts = message.split(' ');
-  const username = `@${user}`;
-  const printFunc = (content: string) => twitchChatClient.say(channel, randomlyPadContent(content));
-  const commandsActiveUpdateFunc = (newState: boolean) => {
-    commandsActive = newState;
-  };
+    const messageParts = message.split(' ');
+    const username = `@${user}`;
+    const printFunc = (content: string) =>
+      twitchChatClient.say(channel, randomlyPadContent(content));
+    const commandsActiveUpdateFunc = (newState: boolean) => {
+      commandsActive = newState;
+    };
 
-  try {
-    if (user === ADMIN_USER) {
+    try {
+      if (user === ADMIN_USER) {
+        if (
+          handleAdminCommand(
+            messageParts,
+            printFunc,
+            commandsActive,
+            commandsActiveUpdateFunc,
+            clients
+          )
+        )
+          return;
+      }
+
+      if (user === ADMIN_USER || mods.includes(user)) {
+        if (await handleModCommand(messageParts, clients)) return;
+      }
+
+      if (!commandsActive) return;
+
       if (
-        handleAdminCommand(
+        await handleTwitchUserCommand(
           messageParts,
+          username,
           printFunc,
-          commandsActive,
-          commandsActiveUpdateFunc,
           clients
         )
       )
         return;
+      if (await handleOBSCommand(messageParts, clients, obsConnected)) return;
+      if (
+        await handleHelpCommand(
+          messageParts,
+          printFunc,
+          clients,
+          OBS_COMMANDS,
+          LIGHT_COMMANDS
+        )
+      )
+        return;
+      if (await handleUserCommand(messageParts, username, printFunc, clients))
+        return;
+    } catch (error) {
+      logger.error(error);
     }
-
-    if (user === ADMIN_USER || mods.includes(user)) {
-      if (await handleModCommand(messageParts, clients)) return;
-    }
-
-    if (!commandsActive) return;
-
-    if (await handleTwitchUserCommand(messageParts, username, printFunc, clients)) return;
-    if (await handleOBSCommand(messageParts, clients, obsConnected)) return;
-    if (await handleHelpCommand(messageParts, printFunc, clients, OBS_COMMANDS, LIGHT_COMMANDS))
-      return;
-    if (await handleUserCommand(messageParts, username, printFunc, clients)) return;
-  } catch (error) {
-    logger.error(error);
   }
+);
+
+getTwitchPubSubClient().then(async (twitchPubSub: TwitchPubSub) => {
+  const { twitchPubSubUserId, twitchPubSubClient } = twitchPubSub;
+
+  twitchPubSubClient.onRedemption(
+    twitchPubSubUserId,
+    (message: PubSubRedemptionMessage) => {
+      logger.info(`${message.rewardName} redeemed by ${message.userName}`);
+    }
+  );
 });
 
 discordClient.on('message', async (message: Message) => {
@@ -93,11 +132,13 @@ discordClient.on('message', async (message: Message) => {
 
   const messageParts = content.split(' ');
   const username = `<@!${member?.user.id}>`;
-  const printFunc = (content: string) => message.channel.send(randomlyPadContent(content));
+  const printFunc = (content: string) =>
+    message.channel.send(randomlyPadContent(content));
 
   try {
     if (await handleHelpCommand(messageParts, printFunc, clients)) return;
-    if (await handleUserCommand(messageParts, username, printFunc, clients)) return;
+    if (await handleUserCommand(messageParts, username, printFunc, clients))
+      return;
   } catch (error) {
     logger.error(error);
   }

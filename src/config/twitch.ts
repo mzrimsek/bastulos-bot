@@ -1,11 +1,11 @@
 import { getEnvValue } from '../utils';
 
-const channelKeys = Object.keys(process.env).filter(key => key.match(/TWITCH_CHANNEL_\d/g));
-const channels = channelKeys.map(key => getEnvValue(key));
-
 export default {
-  channels,
-  clientId: getEnvValue('TWITCH_APPLICATION_CLIENT_ID'),
-  clientSecret: getEnvValue('TWITCH_APPLICATION_CLIENT_SECRET'),
-  tokensLocation: getEnvValue('TWITCH_BOT_TOKENS_FILE_LOCATION')
+  channel: getEnvValue('TWITCH_CHANNEL'),
+  botClientId: getEnvValue('TWITCH_BOT_CLIENT_ID'),
+  botClientSecret: getEnvValue('TWITCH_BOT_CLIENT_SECRET'),
+  botTokensLocation: getEnvValue('TWITCH_BOT_TOKENS_FILE_LOCATION'),
+  channelClientId: getEnvValue('TWITCH_CHANNEL_CLIENT_ID'),
+  channelClientSecret: getEnvValue('TWITCH_CHANNEL_CLIENT_SECRET'),
+  channelTokensLocation: getEnvValue('TWITCH_CHANNEL_TOKENS_FILE_LOCATION')
 };
