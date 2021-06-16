@@ -6,9 +6,16 @@ import {
   BOT_NAME,
   COMMAND_PREFACE,
   LIGHT_COMMANDS,
-  OBS_COMMANDS
+  OBS_COMMANDS,
+  OBS_REDEMPTIONS
 } from './constants';
 import { Clients, TwitchPubSub } from './models';
+import {
+  changeCamOverlayColor,
+  toggleAqua,
+  toggleCam,
+  toggleMic
+} from './redemptions';
 import {
   collections,
   discordClient,
@@ -24,7 +31,6 @@ import {
   handleAdminCommand,
   handleHelpCommand,
   handleModCommand,
-  handleOBSCommand,
   handleTwitchUserCommand,
   handleUserCommand
 } from './commands';
@@ -65,7 +71,7 @@ twitchChatClient.onMessage(
     try {
       if (user === ADMIN_USER) {
         if (
-          handleAdminCommand(
+          await handleAdminCommand(
             messageParts,
             printFunc,
             commandsActive,
@@ -77,7 +83,7 @@ twitchChatClient.onMessage(
       }
 
       if (user === ADMIN_USER || mods.includes(user)) {
-        if (await handleModCommand(messageParts, clients)) return;
+        if (await handleModCommand(messageParts, obsConnected, clients)) return;
       }
 
       if (!commandsActive) return;
@@ -91,7 +97,6 @@ twitchChatClient.onMessage(
         )
       )
         return;
-      if (await handleOBSCommand(messageParts, clients, obsConnected)) return;
       if (
         await handleHelpCommand(
           messageParts,
@@ -115,8 +120,32 @@ getTwitchPubSubClient().then(async (twitchPubSub: TwitchPubSub) => {
 
   twitchPubSubClient.onRedemption(
     twitchPubSubUserId,
-    (message: PubSubRedemptionMessage) => {
+    async (message: PubSubRedemptionMessage) => {
       logger.info(`${message.rewardName} redeemed by ${message.userName}`);
+
+      switch (message.rewardName) {
+        case OBS_REDEMPTIONS.TOGGLE_CAM: {
+          await toggleCam(obsClient, obsConnected);
+          break;
+        }
+        case OBS_REDEMPTIONS.TOGGLE_MUTE_MIC: {
+          await toggleMic(obsClient, obsConnected);
+          break;
+        }
+        case OBS_REDEMPTIONS.CHANGE_OVERLAY_COLOR: {
+          const redemptionCount = Number.parseInt(message.message, 10);
+          const numTimes = Number.isNaN(redemptionCount) ? 1 : redemptionCount;
+          await changeCamOverlayColor(numTimes, obsClient, obsConnected);
+          break;
+        }
+        case OBS_REDEMPTIONS.TOGGLE_AQUA: {
+          await toggleAqua(obsClient, obsConnected);
+          break;
+        }
+        default: {
+          break;
+        }
+      }
     }
   );
 });

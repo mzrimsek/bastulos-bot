@@ -1,5 +1,3 @@
-import * as OBSWebSocket from 'obs-websocket-js';
-
 import {
   ADMIN_COMMANDS,
   COMMAND_PREFACE,
@@ -10,131 +8,21 @@ import {
   WORD_TRACKING_COMMANDS
 } from '../constants';
 import { Clients, PrintFunc } from '../models';
-import { getRandomColor, getRandomInt, loadTrackingPhrases } from '../utils';
-import { logger, obsConfig } from '../config';
+import {
+  getRandomInt,
+  isOBSClientConnected,
+  loadTrackingPhrases
+} from '../utils';
 
-function setColorCorrectionToRandomColor(obsClient: OBSWebSocket) {
-  const randomColor = getRandomColor();
-  obsClient.send('SetSourceFilterSettings', {
-    sourceName: SOURCES.WEBCAM,
-    filterName: 'Color Correction',
-    filterSettings: {
-      color: randomColor
-    }
-  });
-}
+import { logger } from '../config';
 
-export async function handleOBSCommand(
-  messageParts: string[],
-  clients: Clients,
-  obsConnected: boolean
-): Promise<boolean> {
-  const { obsClient } = clients;
-
-  const isOBSClientConnected = async () => {
-    if (!obsConnected) {
-      try {
-        await obsClient.connect(obsConfig);
-        return true;
-      } catch {
-        logger.info('Unable to connect to OBSWebsocket');
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const command = messageParts[0].toLowerCase();
-
-  switch (command) {
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.RESET}`: {
-      if (await isOBSClientConnected()) {
-        obsClient.send('SetSourceFilterVisibility', {
-          sourceName: SOURCES.WEBCAM,
-          filterName: 'Color Correction',
-          filterEnabled: false
-        });
-        obsClient.send('SetSceneItemRender', {
-          source: SOURCES.WEBCAM,
-          render: true
-        });
-        obsClient.send('SetMute', { source: SOURCES.MIC, mute: false });
-      }
-      return true;
-    }
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_CAM}`: {
-      if (await isOBSClientConnected()) {
-        const properties = await obsClient.send('GetSceneItemProperties', {
-          item: { name: SOURCES.WEBCAM }
-        });
-        const { visible } = properties;
-        obsClient.send('SetSceneItemRender', {
-          source: SOURCES.WEBCAM,
-          render: !visible
-        });
-      }
-      return true;
-    }
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_MUTE_MIC}`: {
-      if (await isOBSClientConnected()) {
-        obsClient.send('ToggleMute', { source: SOURCES.MIC });
-      }
-      return true;
-    }
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.CHANGE_OVERLAY_COLOR}`: {
-      if (await isOBSClientConnected()) {
-        let numTimes = messageParts[1] ? parseInt(messageParts[1]) : 1;
-
-        if (numTimes < 0) {
-          numTimes = Math.abs(numTimes);
-        }
-
-        if (numTimes > 1000) {
-          numTimes = 1000;
-        }
-
-        obsClient.send('SetSourceFilterVisibility', {
-          sourceName: SOURCES.WEBCAM,
-          filterName: 'Color Correction',
-          filterEnabled: true
-        });
-
-        const setColorCorrection = () =>
-          setColorCorrectionToRandomColor(obsClient);
-
-        const rate = 1000 / numTimes;
-        for (let i = 0; i < numTimes; i++) {
-          setTimeout(setColorCorrection, rate * i);
-        }
-      }
-      return true;
-    }
-    case `${COMMAND_PREFACE}${OBS_COMMANDS.TOGGLE_AQUA}`: {
-      if (await isOBSClientConnected()) {
-        const properties = await obsClient.send('GetSceneItemProperties', {
-          item: { name: SOURCES.AQUA }
-        });
-        const { visible } = properties;
-        obsClient.send('SetSceneItemRender', {
-          source: SOURCES.AQUA,
-          render: !visible
-        });
-      }
-      return true;
-    }
-    default: {
-      return false;
-    }
-  }
-}
-
-export function handleAdminCommand(
+export async function handleAdminCommand(
   messageParts: string[],
   printFunc: PrintFunc,
   commandsActive: boolean,
   commandsActiveUpdateFunc: (newState: boolean) => void,
   clients: Clients
-): boolean {
+): Promise<boolean> {
   const { firebase } = clients;
   const { collections } = firebase;
   const { commandsCollection } = collections;
@@ -174,6 +62,7 @@ export function handleAdminCommand(
         .then(() => logger.info(`Command removed: ${commandToRemove}`));
       return true;
     }
+
     default: {
       return false;
     }
@@ -263,9 +152,10 @@ export async function handleTwitchUserCommand(
 
 export async function handleModCommand(
   messageParts: string[],
+  obsConnected: boolean,
   clients: Clients
 ): Promise<boolean> {
-  const { firebase } = clients;
+  const { firebase, obsClient } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
 
@@ -333,6 +223,21 @@ export async function handleModCommand(
           .then(() =>
             logger.info(`Tracking word incremented: ${phraseToIncrement}`)
           );
+      }
+      return true;
+    }
+    case `${COMMAND_PREFACE}${OBS_COMMANDS.RESET}`: {
+      if (await isOBSClientConnected(obsClient, obsConnected)) {
+        obsClient.send('SetSourceFilterVisibility', {
+          sourceName: SOURCES.WEBCAM,
+          filterName: 'Color Correction',
+          filterEnabled: false
+        });
+        obsClient.send('SetSceneItemRender', {
+          source: SOURCES.WEBCAM,
+          render: true
+        });
+        obsClient.send('SetMute', { source: SOURCES.MIC, mute: false });
       }
       return true;
     }
