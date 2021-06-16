@@ -43,11 +43,17 @@ export async function getTwitchPubSubClient(): Promise<TwitchPubSub> {
   const apiClient = new ApiClient({ authProvider });
   const twitchPubSubClient = new PubSubClient();
 
-  const twitchPubSubUserId = await twitchPubSubClient.registerUserListener(
-    apiClient
-  );
-  return {
-    twitchPubSubUserId,
-    twitchPubSubClient
-  };
+  try {
+    const twitchPubSubUserId = await twitchPubSubClient.registerUserListener(
+      apiClient
+    );
+    logger.info('Twitch PubSub Client Initialized');
+    return {
+      twitchPubSubUserId,
+      twitchPubSubClient
+    };
+  } catch (error) {
+    logger.error('Twitch PubSub Client Failed to Initialize:', error);
+    throw error;
+  }
 }
