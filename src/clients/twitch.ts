@@ -8,7 +8,7 @@ import { ChatClient } from 'twitch-chat-client';
 import { PubSubClient } from 'twitch-pubsub-client';
 import { TwitchPubSub } from '../models';
 
-const { channels, clientId, clientSecret, tokensLocation } = twitchConfig;
+const { channel, clientId, clientSecret, tokensLocation } = twitchConfig;
 
 const tokenData = JSON.parse(fs.readFileSync(tokensLocation, 'utf-8'));
 const authProvider = new RefreshableAuthProvider(
@@ -35,7 +35,9 @@ const authProvider = new RefreshableAuthProvider(
   }
 );
 
-export const twitchChatClient = new ChatClient(authProvider, { channels });
+export const twitchChatClient = new ChatClient(authProvider, {
+  channels: [channel]
+});
 twitchChatClient.connect();
 twitchChatClient.onConnect(() => logger.info('Connected to Twitch Chat'));
 
@@ -44,9 +46,21 @@ export async function getTwitchPubSubClient(): Promise<TwitchPubSub> {
   const twitchPubSubClient = new PubSubClient();
 
   try {
-    const twitchPubSubUserId = await twitchPubSubClient.registerUserListener(
-      apiClient
+    const channelUser = await apiClient.helix.users.getUserByName(channel);
+
+    if (!channelUser) {
+      const error = 'Unable to fetch channel user';
+      logger.error(error);
+      throw new Error(error);
+    }
+
+    const twitchPubSubUserId = channelUser.id;
+
+    await twitchPubSubClient.registerUserListener(
+      apiClient,
+      twitchPubSubUserId
     );
+
     logger.info('Twitch PubSub Client Initialized');
     return {
       twitchPubSubUserId,
@@ -54,6 +68,6 @@ export async function getTwitchPubSubClient(): Promise<TwitchPubSub> {
     };
   } catch (error) {
     logger.error('Twitch PubSub Client Failed to Initialize:', error);
-    throw error;
+    throw new Error(error);
   }
 }
