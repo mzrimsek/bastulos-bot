@@ -116,7 +116,7 @@ getTwitchPubSubClient().then(async (twitchPubSub: TwitchPubSub) => {
   twitchPubSubClient.onRedemption(
     twitchPubSubUserId,
     (message: PubSubRedemptionMessage) => {
-      logger.info(message);
+      logger.info(message.rewardName);
     }
   );
 });
