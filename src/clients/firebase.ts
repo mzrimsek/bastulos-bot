@@ -1,8 +1,8 @@
 import * as admin from 'firebase-admin';
 
-import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from 'src/constants';
-import { Command, FirestoreCollection, TrackedWord } from 'src/models';
-import { firebaseConfig, logger } from 'src/config';
+import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from '../constants';
+import { Command, FirestoreCollection, TrackedWord } from '../models';
+import { firebaseConfig, logger } from '../config';
 
 const firestoreSettings = {
   timestampsInSnapshots: true

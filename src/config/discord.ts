@@ -1,4 +1,4 @@
-import { getEnvValue } from 'src/utils';
+import { getEnvValue } from '../utils';
 
 export default {
   token: getEnvValue('DISCORD_TOKEN'),

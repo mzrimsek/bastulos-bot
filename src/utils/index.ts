@@ -1,8 +1,8 @@
-import { Command, FirebaseClient, TrackedWord } from 'src/models';
+import { Command, FirebaseClient, TrackedWord } from '../models';
 
-import { COMMAND_SPACER } from 'src/constants';
+import { COMMAND_SPACER } from '../constants';
 import { firestore } from 'firebase-admin';
-import { logger } from 'src/config';
+import { logger } from '../config';
 
 export function getRandomColor(): number {
   return (Math.random() * 4294967296) >>> 0;

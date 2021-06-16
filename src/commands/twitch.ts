@@ -8,10 +8,10 @@ import {
   OBS_COMMANDS,
   SOURCES,
   WORD_TRACKING_COMMANDS
-} from 'src/constants';
-import { Clients, PrintFunc } from 'src/models';
-import { getRandomColor, getRandomInt, loadTrackingPhrases } from 'src/utils';
-import { logger, obsConfig } from 'src/config';
+} from '../constants';
+import { Clients, PrintFunc } from '../models';
+import { getRandomColor, getRandomInt, loadTrackingPhrases } from '../utils';
+import { logger, obsConfig } from '../config';
 
 function setColorCorrectionToRandomColor(obsClient: OBSWebSocket) {
   const randomColor = getRandomColor();
