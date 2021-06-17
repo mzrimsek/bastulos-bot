@@ -68,6 +68,8 @@ twitchChatClient.onMessage(
       commandsActive = newState;
     };
 
+    logger.info(`Twitch: ${user} used command: ${message}`);
+
     try {
       if (user === ADMIN_USER) {
         if (
@@ -163,6 +165,8 @@ discordClient.on('message', async (message: Message) => {
   const username = `<@!${member?.user.id}>`;
   const printFunc = (content: string) =>
     message.channel.send(randomlyPadContent(content));
+
+  logger.info(`Discord: ${member?.displayName} used command: ${message}`);
 
   try {
     if (await handleHelpCommand(messageParts, printFunc, clients)) return;
