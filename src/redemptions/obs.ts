@@ -35,14 +35,6 @@ export async function changeCamOverlayColor(
   obsConnected: boolean
 ): Promise<void> {
   if (await isOBSClientConnected(obsClient, obsConnected)) {
-    if (numTimes < 0) {
-      numTimes = Math.abs(numTimes);
-    }
-
-    if (numTimes > 1000) {
-      numTimes = 1000;
-    }
-
     obsClient.send('SetSourceFilterVisibility', {
       sourceName: SOURCES.WEBCAM,
       filterName: 'Color Correction',

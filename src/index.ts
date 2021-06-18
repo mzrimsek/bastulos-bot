@@ -136,7 +136,16 @@ getTwitchPubSubClient().then(async (twitchPubSub: TwitchPubSub) => {
         }
         case OBS_REDEMPTIONS.CHANGE_OVERLAY_COLOR: {
           const redemptionCount = Number.parseInt(message.message, 10);
-          const numTimes = Number.isNaN(redemptionCount) ? 1 : redemptionCount;
+          let numTimes = Number.isNaN(redemptionCount) ? 1 : redemptionCount;
+
+          if (numTimes < 0) {
+            numTimes = Math.abs(numTimes);
+          }
+
+          if (numTimes > 1000) {
+            numTimes = 1000;
+          }
+
           await changeCamOverlayColor(numTimes, obsClient, obsConnected);
           break;
         }
