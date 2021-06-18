@@ -1,14 +1,9 @@
 import * as OBSWebSocket from 'obs-websocket-js';
 
-import { getRandomColor, isOBSClientConnected } from '../utils';
-
 import { SOURCES } from '../constants';
+import { getRandomColor } from '../utils';
 
-export async function toggleCam(
-  obsClient: OBSWebSocket,
-  obsConnected: boolean
-): Promise<void> {
-  if (await isOBSClientConnected(obsClient, obsConnected)) {
+export async function toggleCam(obsClient: OBSWebSocket): Promise<void> {
     const properties = await obsClient.send('GetSceneItemProperties', {
       item: { name: SOURCES.WEBCAM }
     });
@@ -18,23 +13,15 @@ export async function toggleCam(
       render: !visible
     });
   }
-}
 
-export async function toggleMic(
-  obsClient: OBSWebSocket,
-  obsConnected: boolean
-): Promise<void> {
-  if (await isOBSClientConnected(obsClient, obsConnected)) {
+export async function toggleMic(obsClient: OBSWebSocket): Promise<void> {
     obsClient.send('ToggleMute', { source: SOURCES.MIC });
   }
-}
 
 export async function changeCamOverlayColor(
   numTimes: number,
-  obsClient: OBSWebSocket,
-  obsConnected: boolean
+  obsClient: OBSWebSocket
 ): Promise<void> {
-  if (await isOBSClientConnected(obsClient, obsConnected)) {
     obsClient.send('SetSourceFilterVisibility', {
       sourceName: SOURCES.WEBCAM,
       filterName: 'Color Correction',
@@ -57,11 +44,7 @@ export async function changeCamOverlayColor(
   }
 }
 
-export async function toggleAqua(
-  obsClient: OBSWebSocket,
-  obsConnected: boolean
-): Promise<void> {
-  if (await isOBSClientConnected(obsClient, obsConnected)) {
+export async function toggleAqua(obsClient: OBSWebSocket): Promise<void> {
     const properties = await obsClient.send('GetSceneItemProperties', {
       item: { name: SOURCES.AQUA }
     });
@@ -71,4 +54,3 @@ export async function toggleAqua(
       render: !visible
     });
   }
-}

@@ -34,10 +34,10 @@ import {
   handleTwitchUserCommand,
   handleUserCommand
 } from './commands';
+import { isOBSClientConnected, randomlyPadContent } from './utils';
 
 import { Message } from 'discord.js';
 import { PubSubRedemptionMessage } from 'twitch-pubsub-client/lib';
-import { randomlyPadContent } from './utils';
 
 const clients: Clients = {
   twitchChatClient,
@@ -127,30 +127,38 @@ getTwitchPubSubClient().then(async (twitchPubSub: TwitchPubSub) => {
 
       switch (message.rewardName) {
         case OBS_REDEMPTIONS.TOGGLE_CAM: {
-          await toggleCam(obsClient, obsConnected);
+          if (await isOBSClientConnected(obsClient, obsConnected)) {
+            await toggleCam(obsClient);
+          }
           break;
         }
         case OBS_REDEMPTIONS.TOGGLE_MUTE_MIC: {
-          await toggleMic(obsClient, obsConnected);
+          if (await isOBSClientConnected(obsClient, obsConnected)) {
+            await toggleMic(obsClient);
+          }
           break;
         }
         case OBS_REDEMPTIONS.CHANGE_OVERLAY_COLOR: {
-          const redemptionCount = Number.parseInt(message.message, 10);
-          let numTimes = Number.isNaN(redemptionCount) ? 1 : redemptionCount;
+          if (await isOBSClientConnected(obsClient, obsConnected)) {
+            const redemptionCount = Number.parseInt(message.message, 10);
+            let numTimes = Number.isNaN(redemptionCount) ? 1 : redemptionCount;
 
-          if (numTimes < 0) {
-            numTimes = Math.abs(numTimes);
+            if (numTimes < 0) {
+              numTimes = Math.abs(numTimes);
+            }
+
+            if (numTimes > 1000) {
+              numTimes = 1000;
+            }
+
+            await changeCamOverlayColor(numTimes, obsClient);
           }
-
-          if (numTimes > 1000) {
-            numTimes = 1000;
-          }
-
-          await changeCamOverlayColor(numTimes, obsClient, obsConnected);
           break;
         }
         case OBS_REDEMPTIONS.TOGGLE_AQUA: {
-          await toggleAqua(obsClient, obsConnected);
+          if (await isOBSClientConnected(obsClient, obsConnected)) {
+            await toggleAqua(obsClient);
+          }
           break;
         }
         default: {
