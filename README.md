@@ -35,12 +35,14 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
     - ex: !lightscol 255 0 0
 - !lightsr - sets color of lights in stream room to random color
 
-### OBS (only work when triggered from Twitch chat)
+## Redemptions
 
-- !cam - toggles face cam visibility
-- !mic - toggles desktop mic active
-- !color <number:optional> - changes face cam color overlay color. Optional number parameter causes color to change that many times in 1 second (max 1000)
-- !aqua - toggle Aqua visibility on scenes with her in them
+### OBS
+
+- Toggle Webcam - Toggles face cam visibility
+- Toggle Mic - Toggles desktop mic active
+- Change Cam Overlay Color <number> - Changes face cam color overlay color. Number parameter causes color to change that many times in 1 second (max 1000)
+- Toggle Aqua - Toggle Aqua visibility on scenes with her in them
 
 ## Twitch Authentication
 
