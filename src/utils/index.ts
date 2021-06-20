@@ -3,6 +3,7 @@ import * as OBSWebSocket from 'obs-websocket-js';
 import { Command, FirebaseClient, TrackedWord } from '../models';
 import { logger, obsConfig } from '../config';
 
+import { ApiClient } from 'twitch';
 import { COMMAND_SPACER } from '../constants';
 import { firestore } from 'firebase-admin';
 
@@ -17,10 +18,7 @@ export function getRandomInt(max: number, offset = 0): number {
   return Math.floor(Math.random() * max) + offset;
 }
 
-export function replaceRequestingUserInMessage(
-  username: string,
-  command: string
-): string {
+export function replaceRequestingUserInMessage(username: string, command: string): string {
   return command.replace('{user}', username);
 }
 
@@ -30,30 +28,22 @@ export function randomlyPadContent(content: string): string {
   return `${content}${padding}`;
 }
 
-export async function loadUserCommands(
-  firebase: FirebaseClient
-): Promise<Command[]> {
+export async function loadUserCommands(firebase: FirebaseClient): Promise<Command[]> {
   const { collections } = firebase;
   const { commandsCollection } = collections;
 
   const commandsSnapshot = await commandsCollection.get();
   logger.info('User commands loaded');
-  return commandsSnapshot.docs.map(
-    (doc: firestore.QueryDocumentSnapshot<Command>) => doc.data()
-  );
+  return commandsSnapshot.docs.map((doc: firestore.QueryDocumentSnapshot<Command>) => doc.data());
 }
 
-export async function loadTrackingPhrases(
-  firebase: FirebaseClient
-): Promise<string[]> {
+export async function loadTrackingPhrases(firebase: FirebaseClient): Promise<string[]> {
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
 
   const wordsSnapshot = await trackingWordsCollection.get();
   logger.info('Tracking words loaded');
-  return wordsSnapshot.docs.map(
-    (doc: firestore.QueryDocumentSnapshot<TrackedWord>) => doc.id
-  );
+  return wordsSnapshot.docs.map((doc: firestore.QueryDocumentSnapshot<TrackedWord>) => doc.id);
 }
 
 export async function isOBSClientConnected(
@@ -70,6 +60,11 @@ export async function isOBSClientConnected(
     }
   }
   return true;
+}
+
+export async function isChannelLive(apiClient: ApiClient, channel: string): Promise<boolean> {
+  const stream = await apiClient.helix.streams.getStreamByUserName(channel);
+  return stream !== null;
 }
 
 export function getEnvValue(key: string): string {

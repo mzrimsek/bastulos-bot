@@ -24,36 +24,22 @@ function getRefreshableAuthProvider(
   tokensLocation: string
 ): RefreshableAuthProvider {
   const tokenData = JSON.parse(fs.readFileSync(tokensLocation, 'utf-8'));
-  return new RefreshableAuthProvider(
-    new StaticAuthProvider(clientId, tokenData.accessToken),
-    {
-      clientSecret,
-      refreshToken: tokenData.refreshToken,
-      expiry:
-        tokenData.expiryTimestamp === null
-          ? null
-          : new Date(tokenData.expiryTimestamp),
-      onRefresh: async ({ accessToken, refreshToken, expiryDate }) => {
-        const newTokenData = {
-          accessToken,
-          refreshToken,
-          expiryTimestamp: expiryDate === null ? null : expiryDate.getTime()
-        };
-        fs.writeFileSync(
-          tokensLocation,
-          JSON.stringify(newTokenData, null, 4),
-          'utf-8'
-        );
-      }
+  return new RefreshableAuthProvider(new StaticAuthProvider(clientId, tokenData.accessToken), {
+    clientSecret,
+    refreshToken: tokenData.refreshToken,
+    expiry: tokenData.expiryTimestamp === null ? null : new Date(tokenData.expiryTimestamp),
+    onRefresh: async ({ accessToken, refreshToken, expiryDate }) => {
+      const newTokenData = {
+        accessToken,
+        refreshToken,
+        expiryTimestamp: expiryDate === null ? null : expiryDate.getTime()
+      };
+      fs.writeFileSync(tokensLocation, JSON.stringify(newTokenData, null, 4), 'utf-8');
     }
-  );
+  });
 }
 
-const botAuthProvider = getRefreshableAuthProvider(
-  botClientId,
-  botClientSecret,
-  botTokensLocation
-);
+const botAuthProvider = getRefreshableAuthProvider(botClientId, botClientSecret, botTokensLocation);
 export const twitchChatClient = new ChatClient(botAuthProvider, {
   channels: [channel]
 });
@@ -71,9 +57,7 @@ export async function getTwitchPubSubClient(): Promise<TwitchPubSub> {
   const twitchPubSubClient = new PubSubClient();
 
   try {
-    const twitchPubSubUserId = await twitchPubSubClient.registerUserListener(
-      apiClient
-    );
+    const twitchPubSubUserId = await twitchPubSubClient.registerUserListener(apiClient);
 
     logger.info('Twitch PubSub Client Initialized');
     return {
