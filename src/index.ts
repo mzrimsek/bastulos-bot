@@ -151,7 +151,7 @@ getTwitchPubSubClient().then(async (twitchPubSub: TwitchPubSub) => {
               numTimes = 1000;
             }
 
-            await changeCamOverlayColor(numTimes, obsClient);
+            await changeCamOverlayColor(obsClient, numTimes);
           }
           break;
         }

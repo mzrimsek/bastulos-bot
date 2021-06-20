@@ -1,7 +1,6 @@
 import * as OBSWebSocket from 'obs-websocket-js';
 
 import { SOURCES } from '../constants';
-import { getRandomColor } from '../utils';
 
 export async function toggleCam(obsClient: OBSWebSocket): Promise<void> {
   const properties = await obsClient.send('GetSceneItemProperties', {
@@ -19,8 +18,8 @@ export async function toggleMic(obsClient: OBSWebSocket): Promise<void> {
 }
 
 export async function changeCamOverlayColor(
-  numTimes: number,
-  obsClient: OBSWebSocket
+  obsClient: OBSWebSocket,
+  numTimes = 1
 ): Promise<void> {
   obsClient.send('SetSourceFilterVisibility', {
     sourceName: SOURCES.WEBCAM,
@@ -31,7 +30,7 @@ export async function changeCamOverlayColor(
   const rate = 1000 / numTimes;
   for (let i = 0; i < numTimes; i++) {
     setTimeout(() => {
-      const randomColor = getRandomColor();
+      const randomColor = (Math.random() * 4294967296) >>> 0;
       obsClient.send('SetSourceFilterSettings', {
         sourceName: SOURCES.WEBCAM,
         filterName: 'Color Correction',
