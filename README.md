@@ -12,6 +12,7 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 
 ### Mod (only work when triggered from Twitch chat)
 
+- !reset - reset face cam and mic changes back to default
 - !addw <word/phrase> - adds a word/phrase to be tracked
 - !rmw <word/phrase> - removes a word/phrase from being tracked
 - !incw <word/phrase> <number:optional> - increments the word/phrase count. Optional number parameter sets the amount to increment by
@@ -39,7 +40,6 @@ A bot to interact with Twitch, Discord, and anything else your mind (and my free
 - !cam - toggles face cam visibility
 - !mic - toggles desktop mic active
 - !color <number:optional> - changes face cam color overlay color. Optional number parameter causes color to change that many times in 1 second (max 1000)
-- !reset - reset face cam and mic changes back to default
 - !aqua - toggle Aqua visibility on scenes with her in them
 
 ## Twitch Authentication

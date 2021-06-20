@@ -1,9 +1,14 @@
+import * as OBSWebSocket from 'obs-websocket-js';
+
 import { Command, FirebaseClient, TrackedWord } from '../models';
+import { logger, obsConfig } from '../config';
 
 import { COMMAND_SPACER } from '../constants';
 import { firestore } from 'firebase-admin';
-import { logger } from '../config';
 
+// Deleting this breaks the bot even though it is not used
+// Trying to import it in the OBS redemptions file seems to
+//  break importing and I have literally no idea why :(
 export function getRandomColor(): number {
   return (Math.random() * 4294967296) >>> 0;
 }
@@ -49,6 +54,22 @@ export async function loadTrackingPhrases(
   return wordsSnapshot.docs.map(
     (doc: firestore.QueryDocumentSnapshot<TrackedWord>) => doc.id
   );
+}
+
+export async function isOBSClientConnected(
+  obsClient: OBSWebSocket,
+  obsConnected: boolean
+): Promise<boolean> {
+  if (!obsConnected) {
+    try {
+      await obsClient.connect(obsConfig);
+      return true;
+    } catch {
+      logger.info('Unable to connect to OBSWebsocket');
+      return false;
+    }
+  }
+  return true;
 }
 
 export function getEnvValue(key: string): string {

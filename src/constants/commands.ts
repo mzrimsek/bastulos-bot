@@ -11,11 +11,7 @@ export const ADMIN_COMMANDS = {
 };
 
 export const OBS_COMMANDS = {
-  RESET: 'reset',
-  TOGGLE_CAM: 'cam',
-  TOGGLE_MUTE_MIC: 'mic',
-  CHANGE_OVERLAY_COLOR: 'color',
-  TOGGLE_AQUA: 'aqua'
+  RESET: 'reset'
 };
 
 export const WORD_TRACKING_COMMANDS = {
