@@ -25,7 +25,7 @@ import {
 import { isChannelLive, randomlyPadContent } from './utils';
 
 import { Message } from 'discord.js';
-import { PubSubRedemptionMessage } from 'twitch-pubsub-client/lib';
+import { PubSubRedemptionMessage } from 'twitch-pubsub-client';
 import { handleOBSRedemption } from './redemptions';
 
 const clients: Clients = {
