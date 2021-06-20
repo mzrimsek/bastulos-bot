@@ -7,18 +7,18 @@ import {
   SOURCES,
   WORD_TRACKING_COMMANDS
 } from '../constants';
-import { Clients, PrintFunc } from '../models';
 import { getRandomInt, isOBSClientConnected, loadTrackingPhrases } from '../utils';
 
+import { CommandData } from '../models';
 import { logger } from '../config';
 
 export async function handleAdminCommand(
-  messageParts: string[],
-  printFunc: PrintFunc,
+  commandData: CommandData,
   commandsActive: boolean,
-  commandsActiveUpdateFunc: (newState: boolean) => void,
-  clients: Clients
+  commandsActiveUpdateFunc: (newState: boolean) => void
 ): Promise<boolean> {
+  const { messageParts, clients, printFunc } = commandData;
+
   const { firebase } = clients;
   const { collections } = firebase;
   const { commandsCollection } = collections;
@@ -66,11 +66,11 @@ export async function handleAdminCommand(
 }
 
 export async function handleTwitchUserCommand(
-  messageParts: string[],
-  username: string,
-  printFunc: PrintFunc,
-  clients: Clients
+  commandData: CommandData,
+  username: string
 ): Promise<boolean> {
+  const { messageParts, clients, printFunc } = commandData;
+
   const { firebase, mqttClient } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
@@ -147,10 +147,11 @@ export async function handleTwitchUserCommand(
 }
 
 export async function handleModCommand(
-  messageParts: string[],
-  obsConnected: boolean,
-  clients: Clients
+  commandData: CommandData,
+  obsConnected: boolean
 ): Promise<boolean> {
+  const { messageParts, clients } = commandData;
+
   const { firebase, obsClient } = clients;
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;

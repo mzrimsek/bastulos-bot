@@ -2,15 +2,15 @@ import * as OBSWebSocket from 'obs-websocket-js';
 
 import { OBS_REDEMPTIONS, SOURCES } from '../constants';
 
-import { Clients } from '../models';
-import { PubSubRedemptionMessage } from 'twitch-pubsub-client/lib';
+import { RedemptionData } from '../models';
 import { isOBSClientConnected } from '../utils';
 
 export async function handleOBSRedemption(
-  message: PubSubRedemptionMessage,
-  obsConnected: boolean,
-  clients: Clients
+  redemptionData: RedemptionData,
+  obsConnected: boolean
 ): Promise<boolean> {
+  const { message, clients } = redemptionData;
+
   const { obsClient } = clients;
 
   switch (message.rewardName) {
@@ -55,7 +55,7 @@ export async function handleOBSRedemption(
   }
 }
 
-export async function toggleCam(obsClient: OBSWebSocket): Promise<void> {
+async function toggleCam(obsClient: OBSWebSocket): Promise<void> {
   const properties = await obsClient.send('GetSceneItemProperties', {
     item: { name: SOURCES.WEBCAM }
   });
@@ -66,11 +66,11 @@ export async function toggleCam(obsClient: OBSWebSocket): Promise<void> {
   });
 }
 
-export async function toggleMic(obsClient: OBSWebSocket): Promise<void> {
+async function toggleMic(obsClient: OBSWebSocket): Promise<void> {
   obsClient.send('ToggleMute', { source: SOURCES.MIC });
 }
 
-export async function changeCamOverlayColor(obsClient: OBSWebSocket, numTimes = 1): Promise<void> {
+async function changeCamOverlayColor(obsClient: OBSWebSocket, numTimes = 1): Promise<void> {
   obsClient.send('SetSourceFilterVisibility', {
     sourceName: SOURCES.WEBCAM,
     filterName: 'Color Correction',
@@ -92,7 +92,7 @@ export async function changeCamOverlayColor(obsClient: OBSWebSocket, numTimes = 
   }
 }
 
-export async function toggleAqua(obsClient: OBSWebSocket): Promise<void> {
+async function toggleAqua(obsClient: OBSWebSocket): Promise<void> {
   const properties = await obsClient.send('GetSceneItemProperties', {
     item: { name: SOURCES.AQUA }
   });

@@ -2,7 +2,7 @@
 require('dotenv').config();
 
 import { ADMIN_USER, BOT_NAME, COMMAND_PREFACE, LIGHT_COMMANDS, OBS_COMMANDS } from './constants';
-import { Clients, TwitchPubSub } from './models';
+import { Clients, CommandData, RedemptionData, TwitchPubSub } from './models';
 import {
   apiClient,
   collections,
@@ -65,30 +65,26 @@ twitchChatClient.onMessage(async (channel: string, user: string, message: string
 
   logger.info(`Twitch: ${user} used command: ${message}`);
 
+  const commandData: CommandData = {
+    messageParts,
+    clients,
+    printFunc
+  };
+
   try {
     if (user === ADMIN_USER) {
-      if (
-        await handleAdminCommand(
-          messageParts,
-          printFunc,
-          commandsActive,
-          commandsActiveUpdateFunc,
-          clients
-        )
-      )
-        return;
+      if (await handleAdminCommand(commandData, commandsActive, commandsActiveUpdateFunc)) return;
     }
 
     if (user === ADMIN_USER || mods.includes(user)) {
-      if (await handleModCommand(messageParts, obsConnected, clients)) return;
+      if (await handleModCommand(commandData, obsConnected)) return;
     }
 
     if (!commandsActive) return;
 
-    if (await handleTwitchUserCommand(messageParts, username, printFunc, clients)) return;
-    if (await handleHelpCommand(messageParts, printFunc, clients, OBS_COMMANDS, LIGHT_COMMANDS))
-      return;
-    if (await handleUserCommand(messageParts, username, printFunc, clients)) return;
+    if (await handleTwitchUserCommand(commandData, username)) return;
+    if (await handleHelpCommand(commandData, OBS_COMMANDS, LIGHT_COMMANDS)) return;
+    if (await handleUserCommand(commandData, username)) return;
   } catch (error) {
     logger.error(error);
   }
@@ -100,7 +96,16 @@ getTwitchPubSubClient().then(async (twitchPubSub: TwitchPubSub) => {
   twitchPubSubClient.onRedemption(twitchPubSubUserId, async (message: PubSubRedemptionMessage) => {
     logger.info(`${message.rewardName} redeemed by ${message.userName}`);
 
-    if (await handleOBSRedemption(message, obsConnected, clients)) return;
+    const redemptionData: RedemptionData = {
+      message,
+      clients
+    };
+
+    try {
+      if (await handleOBSRedemption(redemptionData, obsConnected)) return;
+    } catch (error) {
+      logger.error(error);
+    }
   });
 });
 
@@ -119,9 +124,15 @@ discordClient.on('message', async (message: Message) => {
 
   logger.info(`Discord: ${member?.displayName} used command: ${message}`);
 
+  const commandData: CommandData = {
+    messageParts,
+    clients,
+    printFunc
+  };
+
   try {
-    if (await handleHelpCommand(messageParts, printFunc, clients)) return;
-    if (await handleUserCommand(messageParts, username, printFunc, clients)) return;
+    if (await handleHelpCommand(commandData)) return;
+    if (await handleUserCommand(commandData, username)) return;
   } catch (error) {
     logger.error(error);
   }

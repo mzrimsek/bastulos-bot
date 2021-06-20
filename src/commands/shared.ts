@@ -1,15 +1,15 @@
 import { COMMAND_PREFACE, HELP_COMMAND } from '../constants';
-import { Clients, PrintFunc } from '../models';
 import { loadUserCommands, replaceRequestingUserInMessage } from '../utils';
 
+import { CommandData } from '../models';
 import { logger } from '../config';
 
 export async function handleUserCommand(
-  messageParts: string[],
-  username: string,
-  printFunc: PrintFunc,
-  clients: Clients
+  commandData: CommandData,
+  username: string
 ): Promise<boolean> {
+  const { messageParts, clients, printFunc } = commandData;
+
   const command = messageParts[0].toLowerCase();
 
   const { firebase } = clients;
@@ -28,11 +28,11 @@ export async function handleUserCommand(
 }
 
 export async function handleHelpCommand(
-  messageParts: string[],
-  printFunc: PrintFunc,
-  clients: Clients,
+  commandData: CommandData,
   ...extraCommandsDefinitions: Record<string, string>[]
 ): Promise<boolean> {
+  const { messageParts, clients, printFunc } = commandData;
+
   const command = messageParts[0].toLowerCase();
 
   if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
