@@ -27,7 +27,7 @@ import {
   toggleCam,
   toggleMic
 } from './redemptions';
-import { discordConfig, logger, twitchConfig } from './config';
+import { discordConfig, logger } from './config';
 import {
   handleAdminCommand,
   handleHelpCommand,
@@ -55,9 +55,7 @@ let commandsActive = true;
 
 twitchChatClient.onMessage(
   async (channel: string, user: string, message: string) => {
-    const channelUser = await apiClient.helix.users.getUserByName(
-      twitchConfig.channel
-    );
+    const channelUser = await apiClient.helix.users.getUserByName(channel);
 
     if (channelUser) {
       const stream = await apiClient.helix.streams.getStreamByUserId(
