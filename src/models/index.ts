@@ -1,10 +1,10 @@
 import * as OBSWebSocket from 'obs-websocket-js';
 
 import { Client, Message } from 'discord.js';
+import { PubSubClient, PubSubRedemptionMessage } from 'twitch-pubsub-client';
 
 import { ChatClient } from 'twitch-chat-client';
 import { MqttClient } from 'mqtt';
-import { PubSubClient } from 'twitch-pubsub-client';
 import { firestore } from 'firebase-admin';
 
 export interface Command {
@@ -40,3 +40,14 @@ export interface Clients {
 }
 
 export type PrintFunc = (content: string) => Promise<void | Message>;
+
+export interface CommandData {
+  messageParts: string[];
+  clients: Clients;
+  printFunc: PrintFunc;
+}
+
+export interface RedemptionData {
+  message: PubSubRedemptionMessage;
+  clients: Clients;
+}
