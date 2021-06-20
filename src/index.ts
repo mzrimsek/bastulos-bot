@@ -11,12 +11,7 @@ import {
 } from './constants';
 import { Clients, TwitchPubSub } from './models';
 import {
-  changeCamOverlayColor,
-  toggleAqua,
-  toggleCam,
-  toggleMic
-} from './redemptions';
-import {
+  apiClient,
   collections,
   discordClient,
   firestore,
@@ -26,7 +21,13 @@ import {
   obsConnected,
   twitchChatClient
 } from './clients';
-import { discordConfig, logger } from './config';
+import {
+  changeCamOverlayColor,
+  toggleAqua,
+  toggleCam,
+  toggleMic
+} from './redemptions';
+import { discordConfig, logger, twitchConfig } from './config';
 import {
   handleAdminCommand,
   handleHelpCommand,
@@ -54,65 +55,81 @@ let commandsActive = true;
 
 twitchChatClient.onMessage(
   async (channel: string, user: string, message: string) => {
-    if (user === BOT_NAME) return; // ignore messages from the bot
+    const channelUser = await apiClient.helix.users.getUserByName(
+      twitchConfig.channel
+    );
 
-    if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
+    if (channelUser) {
+      const stream = await apiClient.helix.streams.getStreamByUserId(
+        channelUser.id
+      );
+      if (stream === null) return; // disable commands when not live
 
-    const mods = await twitchChatClient.getMods(channel);
+      if (user === BOT_NAME) return; // ignore messages from the bot
 
-    const messageParts = message.split(' ');
-    const username = `@${user}`;
-    const printFunc = (content: string) =>
-      twitchChatClient.say(channel, randomlyPadContent(content));
-    const commandsActiveUpdateFunc = (newState: boolean) => {
-      commandsActive = newState;
-    };
+      if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
-    logger.info(`Twitch: ${user} used command: ${message}`);
+      const mods = await twitchChatClient.getMods(channel);
 
-    try {
-      if (user === ADMIN_USER) {
+      const messageParts = message.split(' ');
+      const username = `@${user}`;
+      const printFunc = (content: string) =>
+        twitchChatClient.say(channel, randomlyPadContent(content));
+      const commandsActiveUpdateFunc = (newState: boolean) => {
+        commandsActive = newState;
+      };
+
+      logger.info(`Twitch: ${user} used command: ${message}`);
+
+      try {
+        if (user === ADMIN_USER) {
+          if (
+            await handleAdminCommand(
+              messageParts,
+              printFunc,
+              commandsActive,
+              commandsActiveUpdateFunc,
+              clients
+            )
+          )
+            return;
+        }
+
+        if (user === ADMIN_USER || mods.includes(user)) {
+          if (await handleModCommand(messageParts, obsConnected, clients))
+            return;
+        }
+
+        if (!commandsActive) return;
+
         if (
-          await handleAdminCommand(
+          await handleTwitchUserCommand(
             messageParts,
+            username,
             printFunc,
-            commandsActive,
-            commandsActiveUpdateFunc,
             clients
           )
         )
           return;
-      }
-
-      if (user === ADMIN_USER || mods.includes(user)) {
-        if (await handleModCommand(messageParts, obsConnected, clients)) return;
-      }
-
-      if (!commandsActive) return;
-
-      if (
-        await handleTwitchUserCommand(
-          messageParts,
-          username,
-          printFunc,
-          clients
+        if (
+          await handleHelpCommand(
+            messageParts,
+            printFunc,
+            clients,
+            OBS_COMMANDS,
+            LIGHT_COMMANDS
+          )
         )
-      )
-        return;
-      if (
-        await handleHelpCommand(
-          messageParts,
-          printFunc,
-          clients,
-          OBS_COMMANDS,
-          LIGHT_COMMANDS
-        )
-      )
-        return;
-      if (await handleUserCommand(messageParts, username, printFunc, clients))
-        return;
-    } catch (error) {
-      logger.error(error);
+          return;
+        if (await handleUserCommand(messageParts, username, printFunc, clients))
+          return;
+      } catch (error) {
+        logger.error(error);
+      }
+    } else {
+      logger.error(
+        'Unable to fetch channel information to determine live status'
+      );
     }
   }
 );

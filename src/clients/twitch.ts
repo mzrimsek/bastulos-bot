@@ -65,8 +65,9 @@ const channelAuthProvider = getRefreshableAuthProvider(
   channelClientSecret,
   channelTokensLocation
 );
+export const apiClient = new ApiClient({ authProvider: channelAuthProvider });
+
 export async function getTwitchPubSubClient(): Promise<TwitchPubSub> {
-  const apiClient = new ApiClient({ authProvider: channelAuthProvider });
   const twitchPubSubClient = new PubSubClient();
 
   try {
