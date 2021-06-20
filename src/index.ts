@@ -55,13 +55,19 @@ let commandsActive = true;
 
 twitchChatClient.onMessage(
   async (channel: string, user: string, message: string) => {
-    const channelUser = await apiClient.helix.users.getUserByName(channel);
+    const searchableChannel = channel.replace('#', '');
+    const channelUser = await apiClient.helix.users.getUserByName(
+      searchableChannel
+    );
 
     if (channelUser) {
       const stream = await apiClient.helix.streams.getStreamByUserId(
         channelUser.id
       );
-      if (stream === null) return; // disable commands when not live
+      if (stream === null) {
+        logger.info('Stream offline - command ignored');
+        return;
+      }
 
       if (user === BOT_NAME) return; // ignore messages from the bot
 
