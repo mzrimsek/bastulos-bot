@@ -7,7 +7,5 @@ discordClient.login(discordConfig.token);
 
 discordClient.on('ready', () => {
   logger.info('Connected to Discord');
-  logger.info(
-    `Logged in as: ${discordClient.user?.tag} - (${discordClient.user?.id})`
-  );
+  logger.info(`Logged in as: ${discordClient.user?.tag} - (${discordClient.user?.id})`);
 });

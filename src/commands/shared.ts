@@ -15,15 +15,10 @@ export async function handleUserCommand(
   const { firebase } = clients;
   const userCommands = await loadUserCommands(firebase);
 
-  const foundCommand = userCommands.find(
-    x => `${COMMAND_PREFACE}${x.command}` === command
-  );
+  const foundCommand = userCommands.find(x => `${COMMAND_PREFACE}${x.command}` === command);
   if (foundCommand) {
     logger.info(`Found command: ${foundCommand.command}`);
-    const replacedCommand = replaceRequestingUserInMessage(
-      username,
-      foundCommand.message
-    );
+    const replacedCommand = replaceRequestingUserInMessage(username, foundCommand.message);
     printFunc(replacedCommand);
 
     return true;
@@ -44,24 +39,14 @@ export async function handleHelpCommand(
     const { firebase } = clients;
     const userCommands = await loadUserCommands(firebase);
 
-    const extraCommandsLists = extraCommandsDefinitions.map(
-      extraCommandsDefinition => {
-        const extraCommandKeys = Object.keys(extraCommandsDefinition);
-        return extraCommandKeys.map(
-          commandKey => extraCommandsDefinition[commandKey]
-        );
-      }
-    );
+    const extraCommandsLists = extraCommandsDefinitions.map(extraCommandsDefinition => {
+      const extraCommandKeys = Object.keys(extraCommandsDefinition);
+      return extraCommandKeys.map(commandKey => extraCommandsDefinition[commandKey]);
+    });
     const extraCommandsList: string[] = extraCommandsLists.flat();
 
-    const userCommandList = userCommands.map(
-      userCommand => userCommand.command
-    );
-    const allCommandList = [
-      ...userCommandList,
-      ...extraCommandsList,
-      HELP_COMMAND
-    ];
+    const userCommandList = userCommands.map(userCommand => userCommand.command);
+    const allCommandList = [...userCommandList, ...extraCommandsList, HELP_COMMAND];
 
     const helpMessageList = allCommandList
       .map(command => `${COMMAND_PREFACE}${command}`)

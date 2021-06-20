@@ -8,11 +8,7 @@ import {
   WORD_TRACKING_COMMANDS
 } from '../constants';
 import { Clients, PrintFunc } from '../models';
-import {
-  getRandomInt,
-  isOBSClientConnected,
-  loadTrackingPhrases
-} from '../utils';
+import { getRandomInt, isOBSClientConnected, loadTrackingPhrases } from '../utils';
 
 import { logger } from '../config';
 
@@ -220,9 +216,7 @@ export async function handleModCommand(
         const currentCount: number = document.get('count');
         documentRef
           .update('count', currentCount + count)
-          .then(() =>
-            logger.info(`Tracking word incremented: ${phraseToIncrement}`)
-          );
+          .then(() => logger.info(`Tracking word incremented: ${phraseToIncrement}`));
       }
       return true;
     }
