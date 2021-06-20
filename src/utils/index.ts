@@ -3,6 +3,7 @@ import * as OBSWebSocket from 'obs-websocket-js';
 import { Command, FirebaseClient, TrackedWord } from '../models';
 import { logger, obsConfig } from '../config';
 
+import { ApiClient } from 'twitch';
 import { COMMAND_SPACER } from '../constants';
 import { firestore } from 'firebase-admin';
 
@@ -70,6 +71,14 @@ export async function isOBSClientConnected(
     }
   }
   return true;
+}
+
+export async function isChannelLive(
+  apiClient: ApiClient,
+  channel: string
+): Promise<boolean> {
+  const stream = await apiClient.helix.streams.getStreamByUserName(channel);
+  return stream !== null;
 }
 
 export function getEnvValue(key: string): string {
