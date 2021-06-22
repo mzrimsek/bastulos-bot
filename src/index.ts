@@ -2,18 +2,7 @@
 require('dotenv').config();
 
 import { ADMIN_USER, BOT_NAME, COMMAND_PREFACE, LIGHT_COMMANDS, OBS_COMMANDS } from './constants';
-import { Clients, CommandData, RedemptionData, TwitchPubSub } from './models';
-import {
-  apiClient,
-  collections,
-  discordClient,
-  firestore,
-  getTwitchPubSubClient,
-  mqttClient,
-  obsClient,
-  obsConnected,
-  twitchChatClient
-} from './clients';
+import { CommandData, RedemptionData, TwitchPubSub } from './models';
 import { discordConfig, logger } from './config';
 import {
   handleAdminCommand,
@@ -24,24 +13,14 @@ import {
 } from './commands';
 import { isChannelLive, randomlyPadContent } from './utils';
 
+import { Clients } from './clients';
 import { Message } from 'discord.js';
 import { PubSubRedemptionMessage } from 'twitch-pubsub-client';
 import { handleOBSRedemption } from './redemptions';
 
-const clients: Clients = {
-  twitchChatClient,
-  obsClient,
-  firebase: {
-    firestore,
-    collections
-  },
-  discordClient,
-  mqttClient
-};
-
 let commandsActive = true;
 
-twitchChatClient.onMessage(async (channel: string, user: string, message: string) => {
+Clients.TwitchBotChat.onMessage(async (channel: string, user: string, message: string) => {
   if (user === BOT_NAME) return; // ignore messages from the bot
 
   if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
@@ -54,11 +33,12 @@ twitchChatClient.onMessage(async (channel: string, user: string, message: string
     return;
   }
 
-  const mods = await twitchChatClient.getMods(channel);
+  const mods = await Clients.TwitchBotChat.getMods(channel);
 
   const messageParts = message.split(' ');
   const username = `@${user}`;
-  const printFunc = (content: string) => twitchChatClient.say(channel, randomlyPadContent(content));
+  const printFunc = (content: string) =>
+    Clients.TwitchBotChat.say(channel, randomlyPadContent(content));
   const commandsActiveUpdateFunc = (newState: boolean) => {
     commandsActive = newState;
   };
