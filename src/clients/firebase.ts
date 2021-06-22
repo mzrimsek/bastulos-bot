@@ -56,7 +56,7 @@ export default class FirestoreClient implements Client<FirestoreData> {
 
       const collections = { commandsCollection, trackingWordsCollection };
 
-      return {
+      this.client = {
         firestore,
         collections
       };
