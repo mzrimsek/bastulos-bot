@@ -34,4 +34,5 @@ export interface RedemptionData {
 }
 
 export * from './firebase';
+export * from './obs';
 export * from './client';
