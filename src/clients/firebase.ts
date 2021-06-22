@@ -1,52 +1,66 @@
 import * as admin from 'firebase-admin';
 
 import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from '../constants';
-import { Command, FirestoreCollection, TrackedWord } from '../models';
+import { Client, Command, FirestoreCollection, FirestoreData, TrackedWord } from '../models';
 import { firebaseConfig, logger } from '../config';
 
-const firestoreSettings = {
-  timestampsInSnapshots: true
-};
+export default class FirestoreClient implements Client<FirestoreData> {
+  private client: FirestoreData | null = null;
 
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: firebaseConfig.service_account.project_id,
-    clientEmail: firebaseConfig.service_account.client_email,
-    privateKey: firebaseConfig.service_account.private_key
-  }),
-  databaseURL: firebaseConfig.database_url
-});
+  private getFirestore(): FirebaseFirestore.Firestore {
+    const firestoreSettings = {
+      timestampsInSnapshots: true
+    };
 
-export const firestore: FirebaseFirestore.Firestore = admin.firestore();
-firestore.settings(firestoreSettings);
-logger.info('Connection to Firebase established');
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: firebaseConfig.service_account.project_id,
+        clientEmail: firebaseConfig.service_account.client_email,
+        privateKey: firebaseConfig.service_account.private_key
+      }),
+      databaseURL: firebaseConfig.database_url
+    });
 
-const commandConverter: FirebaseFirestore.FirestoreDataConverter<Command> = {
-  toFirestore(command: Command): FirebaseFirestore.DocumentData {
-    return { command: command.command, message: command.message };
-  },
-  fromFirestore(snapshot: FirebaseFirestore.QueryDocumentSnapshot): Command {
-    const data = snapshot.data();
-    return { command: data.command, message: data.message };
+    const firestore: FirebaseFirestore.Firestore = admin.firestore();
+    firestore.settings(firestoreSettings);
+    return firestore;
   }
-};
 
-const trackingWordConverter: FirebaseFirestore.FirestoreDataConverter<TrackedWord> = {
-  toFirestore(trackedWord: TrackedWord): FirebaseFirestore.DocumentData {
-    return { count: trackedWord.count };
-  },
-  fromFirestore(snapshot: FirebaseFirestore.QueryDocumentSnapshot): TrackedWord {
-    const data = snapshot.data();
-    return { count: data.count };
+  private getCollection<DataType>(
+    firestore: FirebaseFirestore.Firestore,
+    collection: string
+  ): FirestoreCollection<DataType> {
+    const converter: FirebaseFirestore.FirestoreDataConverter<DataType> = {
+      toFirestore(concreteType: DataType): FirebaseFirestore.DocumentData {
+        return concreteType;
+      },
+      fromFirestore(snapshot: FirebaseFirestore.QueryDocumentSnapshot): DataType {
+        const data = snapshot.data();
+        return data as DataType;
+      }
+    };
+
+    return firestore.collection(collection).withConverter(converter);
   }
-};
 
-const commandsCollection: FirestoreCollection<Command> = firestore
-  .collection(COMMANDS_COLLECTION)
-  .withConverter(commandConverter);
+  async getClient(): Promise<FirestoreData> {
+    if (!this.client) {
+      const firestore = this.getFirestore();
+      logger.info('Connected to Firestore');
 
-const trackingWordsCollection: FirestoreCollection<TrackedWord> = firestore
-  .collection(WORD_TRACKING_COLLECTION)
-  .withConverter(trackingWordConverter);
+      const commandsCollection = this.getCollection<Command>(firestore, COMMANDS_COLLECTION);
+      const trackingWordsCollection = this.getCollection<TrackedWord>(
+        firestore,
+        WORD_TRACKING_COLLECTION
+      );
 
-export const collections = { commandsCollection, trackingWordsCollection };
+      const collections = { commandsCollection, trackingWordsCollection };
+
+      return {
+        firestore,
+        collections
+      };
+    }
+    return this.client;
+  }
+}
