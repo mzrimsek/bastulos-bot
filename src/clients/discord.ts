@@ -2,9 +2,7 @@ import * as discord from 'discord.js';
 
 import { discordConfig, logger } from '../config';
 
-import { Client } from '../models';
-
-export class DiscordClient implements Client<discord.Client> {
+export class DiscordClient {
   private client: discord.Client | null = null;
 
   async getClient(): Promise<discord.Client> {

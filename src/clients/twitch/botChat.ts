@@ -1,10 +1,9 @@
 import { logger, twitchConfig } from '../../config';
 
 import { ChatClient } from 'twitch-chat-client';
-import { Client } from '../../models';
 import { getRefreshableAuthProvider } from './helpers';
 
-export class TwitchBotChatClient implements Client<ChatClient> {
+export class TwitchBotChatClient {
   private client: ChatClient | null = null;
 
   async getClient(): Promise<ChatClient> {

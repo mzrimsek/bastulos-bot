@@ -2,9 +2,7 @@ import * as mqtt from 'mqtt';
 
 import { logger, mqttConfig } from '../config';
 
-import { Client } from '../models';
-
-export class MqttClient implements Client<mqtt.MqttClient> {
+export class MqttClient {
   private client: mqtt.MqttClient | null = null;
 
   async getClient(): Promise<mqtt.MqttClient> {

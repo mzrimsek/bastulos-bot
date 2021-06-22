@@ -1,10 +1,10 @@
 import * as admin from 'firebase-admin';
 
 import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from '../constants';
-import { Client, Command, FirestoreCollection, FirestoreData, TrackedWord } from '../models';
+import { Command, FirestoreCollection, FirestoreData, TrackedWord } from '../models';
 import { firebaseConfig, logger } from '../config';
 
-export class FirestoreClient implements Client<FirestoreData> {
+export class FirestoreClient {
   private client: FirestoreData | null = null;
 
   private getFirestore(): FirebaseFirestore.Firestore {

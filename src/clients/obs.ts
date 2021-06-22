@@ -1,13 +1,14 @@
 import * as OBSWebSocket from 'obs-websocket-js';
 
-import { Client, ObsActionType } from '../models';
 import { logger, obsConfig } from '../config';
 
-export class ObsClient implements Client<OBSWebSocket> {
+import { ObsActionType } from '../models';
+
+export class ObsClient {
   private client: OBSWebSocket | null = null;
   private obsConnected = false;
 
-  async getClient(): Promise<OBSWebSocket> {
+  private async getClient(): Promise<OBSWebSocket> {
     if (!this.client) {
       this.client = new OBSWebSocket();
 

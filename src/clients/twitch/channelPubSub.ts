@@ -1,11 +1,11 @@
-import { Client, TwitchPubSub } from '../../models';
 import { logger, twitchConfig } from '../../config';
 
 import { ApiClient } from 'twitch';
 import { PubSubClient } from 'twitch-pubsub-client';
+import { TwitchPubSub } from '../../models';
 import { getRefreshableAuthProvider } from './helpers';
 
-export class TwitchChannelPubSubClient implements Client<TwitchPubSub> {
+export class TwitchChannelPubSubClient {
   private client: TwitchPubSub | null = null;
 
   async getClient(): Promise<TwitchPubSub> {
