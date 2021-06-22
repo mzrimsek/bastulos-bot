@@ -4,7 +4,7 @@ import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from '../constants';
 import { Client, Command, FirestoreCollection, FirestoreData, TrackedWord } from '../models';
 import { firebaseConfig, logger } from '../config';
 
-export default class FirestoreClient implements Client<FirestoreData> {
+export class FirestoreClient implements Client<FirestoreData> {
   private client: FirestoreData | null = null;
 
   private getFirestore(): FirebaseFirestore.Firestore {

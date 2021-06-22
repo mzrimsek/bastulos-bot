@@ -4,27 +4,8 @@ import { Client, Message } from 'discord.js';
 import { PubSubClient, PubSubRedemptionMessage } from 'twitch-pubsub-client';
 
 import { ChatClient } from 'twitch-chat-client';
+import { FirestoreData } from './firebase';
 import { MqttClient } from 'mqtt';
-import { firestore } from 'firebase-admin';
-
-export interface Command {
-  command: string;
-  message: string;
-}
-
-export interface TrackedWord {
-  count: number;
-}
-
-export type FirestoreCollection<T> = firestore.CollectionReference<T>;
-
-export interface FirebaseClient {
-  firestore: firestore.Firestore;
-  collections: {
-    commandsCollection: FirestoreCollection<Command>;
-    trackingWordsCollection: FirestoreCollection<TrackedWord>;
-  };
-}
 
 export interface TwitchPubSub {
   twitchPubSubUserId: string;
@@ -34,7 +15,7 @@ export interface TwitchPubSub {
 export interface Clients {
   twitchChatClient: ChatClient;
   obsClient: OBSWebSocket;
-  firebase: FirebaseClient;
+  firebase: FirestoreData;
   discordClient: Client;
   mqttClient: MqttClient;
 }
@@ -51,3 +32,6 @@ export interface RedemptionData {
   message: PubSubRedemptionMessage;
   clients: Clients;
 }
+
+export * from './firebase';
+export * from './client';

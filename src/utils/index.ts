@@ -1,6 +1,6 @@
 import * as OBSWebSocket from 'obs-websocket-js';
 
-import { Command, FirebaseClient, TrackedWord } from '../models';
+import { Command, FirestoreData, TrackedWord } from '../models';
 import { logger, obsConfig } from '../config';
 
 import { ApiClient } from 'twitch';
@@ -28,7 +28,7 @@ export function randomlyPadContent(content: string): string {
   return `${content}${padding}`;
 }
 
-export async function loadUserCommands(firebase: FirebaseClient): Promise<Command[]> {
+export async function loadUserCommands(firebase: FirestoreData): Promise<Command[]> {
   const { collections } = firebase;
   const { commandsCollection } = collections;
 
@@ -37,7 +37,7 @@ export async function loadUserCommands(firebase: FirebaseClient): Promise<Comman
   return commandsSnapshot.docs.map((doc: firestore.QueryDocumentSnapshot<Command>) => doc.data());
 }
 
-export async function loadTrackingPhrases(firebase: FirebaseClient): Promise<string[]> {
+export async function loadTrackingPhrases(firebase: FirestoreData): Promise<string[]> {
   const { collections } = firebase;
   const { trackingWordsCollection } = collections;
 

@@ -3,7 +3,7 @@ import * as OBSWebSocket from 'obs-websocket-js';
 import { Client } from '../models';
 import { logger } from '../config';
 
-export default class ObsClient implements Client<OBSWebSocket> {
+export class ObsClient implements Client<OBSWebSocket> {
   obsConnected = false;
   private client: OBSWebSocket | null = null;
 
