@@ -25,13 +25,13 @@ clients.TwitchChat.onMessage(async (channel: string, user: string, message: stri
 
   if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
-  // const searchableChannel = channel.replace('#', '');
-  // const channelIsLive = await clients.TwitchApi.isChannelLive(searchableChannel);
+  const searchableChannel = channel.replace('#', '');
+  const channelIsLive = await clients.TwitchApi.isChannelLive(searchableChannel);
 
-  // if (!channelIsLive) {
-  //   logger.info('Stream offline - command ignored');
-  //   return;
-  // }
+  if (!channelIsLive) {
+    logger.info('Stream offline - command ignored');
+    return;
+  }
 
   const messageParts = message.split(' ');
   const username = `@${user}`;
