@@ -56,7 +56,8 @@ clients.TwitchChat.onMessage(async (channel: string, user: string, message: stri
       if (await handleAdminCommand(commandData, commandsActive, commandsActiveUpdateFunc)) return;
     }
 
-    if (user === ADMIN_USER || mods.includes(user)) {
+    const userIsMod = clients.TwitchChat.isUserChannelMod(channel, user);
+    if (user === ADMIN_USER || userIsMod) {
       if (await handleModCommand(commandData)) return;
     }
 

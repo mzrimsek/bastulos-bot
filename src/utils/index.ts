@@ -1,4 +1,3 @@
-import { ApiClient } from 'twitch';
 import { COMMAND_SPACER } from '../constants';
 
 // Deleting this breaks the bot even though it is not used
@@ -20,11 +19,6 @@ export function randomlyPadContent(content: string): string {
   const numToPad = getRandomInt(99, 1);
   const padding = COMMAND_SPACER.repeat(numToPad);
   return `${content}${padding}`;
-}
-
-export async function isChannelLive(apiClient: ApiClient, channel: string): Promise<boolean> {
-  const stream = await apiClient.helix.streams.getStreamByUserName(channel);
-  return stream !== null;
 }
 
 export function getEnvValue(key: string): string {

@@ -31,7 +31,8 @@ export class TwitchBotChatClient {
     this.client.say(channel, message);
   }
 
-  async getMods(channel: string): Promise<string[]> {
-    return this.client.getMods(channel);
+  async isUserChannelMod(channel: string, user: string): Promise<boolean> {
+    const mods = await this.client.getMods(channel);
+    return mods.includes(user);
   }
 }
