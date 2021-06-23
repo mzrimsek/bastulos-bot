@@ -1,13 +1,12 @@
-import * as discord from 'discord.js';
-
+import { Client, Message } from 'discord.js';
 import { discordConfig, logger } from '../config';
 
 export class DiscordClient {
-  private client: discord.Client | null = null;
+  private client: Client | null = null;
 
-  async getClient(): Promise<discord.Client> {
+  private async getClient(): Promise<Client> {
     if (!this.client) {
-      this.client = new discord.Client();
+      this.client = new Client();
       this.client.login(discordConfig.token);
 
       this.client.on('ready', () => {
@@ -16,5 +15,10 @@ export class DiscordClient {
       });
     }
     return this.client;
+  }
+
+  async onMessage(messageHandler: (message: Message) => void): Promise<void> {
+    const client = await this.getClient();
+    client.on('message', messageHandler);
   }
 }

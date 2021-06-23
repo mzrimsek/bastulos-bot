@@ -1,11 +1,13 @@
-import { TwitchBotChatClient } from './twitch';
+import { TwitchBotChatClient, TwitchChannelPubSubClient } from './twitch';
 
-export * from './twitch';
+import { DiscordClient } from './discord';
+
 export * from './obs';
 export * from './firebase';
-export * from './discord';
 export * from './mqtt';
 
 export const Clients = {
-  TwitchBotChat: new TwitchBotChatClient()
+  TwitchChat: new TwitchBotChatClient(),
+  TwitchPubSub: new TwitchChannelPubSubClient(),
+  Discord: new DiscordClient()
 };

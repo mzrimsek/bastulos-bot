@@ -1,14 +1,14 @@
+import { PubSubClient, PubSubRedemptionMessage } from 'twitch-pubsub-client';
 import { logger, twitchConfig } from '../../config';
 
 import { ApiClient } from 'twitch';
-import { PubSubClient } from 'twitch-pubsub-client';
-import { TwitchPubSub } from '../../models';
 import { getRefreshableAuthProvider } from './helpers';
 
 export class TwitchChannelPubSubClient {
-  private client: TwitchPubSub | null = null;
+  private client: PubSubClient | null = null;
+  private userId = '';
 
-  async getClient(): Promise<TwitchPubSub> {
+  private async getClient(): Promise<PubSubClient> {
     if (!this.client) {
       const { channelClientId, channelClientSecret, channelTokensLocation } = twitchConfig;
 
@@ -19,21 +19,15 @@ export class TwitchChannelPubSubClient {
       );
       const apiClient = new ApiClient({ authProvider: channelAuthProvider });
 
-      const twitchPubSubClient = new PubSubClient();
-
-      try {
-        const twitchPubSubUserId = await twitchPubSubClient.registerUserListener(apiClient);
-
-        logger.info('Twitch PubSub Client Initialized');
-        this.client = {
-          twitchPubSubUserId,
-          twitchPubSubClient
-        };
-      } catch (error) {
-        logger.error('Twitch PubSub Client Failed to Initialize:', error);
-        throw new Error(error);
-      }
+      this.client = new PubSubClient();
+      this.userId = await this.client.registerUserListener(apiClient);
+      logger.info('Twitch PubSub Client Initialized');
     }
     return this.client;
+  }
+
+  async onRedemption(redemptionHandler: (message: PubSubRedemptionMessage) => void): Promise<void> {
+    const client = await this.getClient();
+    client.onRedemption(this.userId, redemptionHandler);
   }
 }
