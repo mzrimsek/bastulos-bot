@@ -2,7 +2,17 @@ import * as mqtt from 'mqtt';
 
 import { logger, mqttConfig } from '../config';
 
-export const mqttClient = mqtt.connect(`tcp://${mqttConfig.address}`);
-mqttClient.on('connect', () => {
-  logger.info('Connected to MQTT Broker');
-});
+export class MqttClient {
+  private client: mqtt.MqttClient;
+
+  constructor() {
+    this.client = mqtt.connect(`tcp://${mqttConfig.address}`);
+    this.client.on('connect', () => {
+      logger.info('Connected to MQTT Broker');
+    });
+  }
+
+  async publish(topic: string, message: string): Promise<void> {
+    this.client.publish(topic, message);
+  }
+}

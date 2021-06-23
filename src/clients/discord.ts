@@ -1,11 +1,30 @@
-import * as discord from 'discord.js';
-
+import { Client, Message } from 'discord.js';
 import { discordConfig, logger } from '../config';
 
-export const discordClient = new discord.Client();
-discordClient.login(discordConfig.token);
+export class DiscordClient {
+  private client: Client;
 
-discordClient.on('ready', () => {
-  logger.info('Connected to Discord');
-  logger.info(`Logged in as: ${discordClient.user?.tag} - (${discordClient.user?.id})`);
-});
+  constructor() {
+    this.client = new Client();
+    this.client.login(discordConfig.token);
+
+    this.client.on('ready', () => {
+      logger.info('Connected to Discord');
+      logger.info(`Logged in as: ${this.client.user?.tag} - (${this.client.user?.id})`);
+    });
+  }
+
+  async onMessage(messageHandler: (message: Message) => void): Promise<void> {
+    this.client.on('message', messageHandler);
+  }
+
+  getBotUserId(): string {
+    const botUser = this.client.user;
+
+    if (botUser) {
+      return botUser.id;
+    }
+
+    return '';
+  }
+}

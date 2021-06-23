@@ -1,8 +1,8 @@
 import { COMMAND_PREFACE, HELP_COMMAND } from '../constants';
-import { loadUserCommands, replaceRequestingUserInMessage } from '../utils';
 
 import { CommandData } from '../models';
 import { logger } from '../config';
+import { replaceRequestingUserInMessage } from '../utils';
 
 export async function handleUserCommand(
   commandData: CommandData,
@@ -12,8 +12,8 @@ export async function handleUserCommand(
 
   const command = messageParts[0].toLowerCase();
 
-  const { firebase } = clients;
-  const userCommands = await loadUserCommands(firebase);
+  const { Firestore } = clients;
+  const userCommands = await Firestore.loadUserCommands();
 
   const foundCommand = userCommands.find(x => `${COMMAND_PREFACE}${x.command}` === command);
   if (foundCommand) {
@@ -36,8 +36,8 @@ export async function handleHelpCommand(
   const command = messageParts[0].toLowerCase();
 
   if (command === `${COMMAND_PREFACE}${HELP_COMMAND}`) {
-    const { firebase } = clients;
-    const userCommands = await loadUserCommands(firebase);
+    const { Firestore } = clients;
+    const userCommands = await Firestore.loadUserCommands();
 
     const extraCommandsLists = extraCommandsDefinitions.map(extraCommandsDefinition => {
       const extraCommandKeys = Object.keys(extraCommandsDefinition);
