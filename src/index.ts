@@ -13,7 +13,7 @@ import {
 
 import { Message } from 'discord.js';
 import { PubSubRedemptionMessage } from 'twitch-pubsub-client';
-import { clients } from './clients';
+import clients from './clients';
 import { handleOBSRedemption } from './redemptions';
 import logger from './logger';
 import { randomlyPadContent } from './utils';
