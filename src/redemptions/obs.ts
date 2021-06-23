@@ -13,14 +13,14 @@ export async function handleOBSRedemption(redemptionData: RedemptionData): Promi
         item: { name: SOURCES.WEBCAM }
       });
       const { visible } = properties;
-      Obs.send('SetSceneItemRender', {
+      await Obs.send('SetSceneItemRender', {
         source: SOURCES.WEBCAM,
         render: !visible
       });
       return true;
     }
     case OBS_REDEMPTIONS.TOGGLE_MUTE_MIC: {
-      Obs.send('ToggleMute', { source: SOURCES.MIC });
+      await Obs.send('ToggleMute', { source: SOURCES.MIC });
       return true;
     }
     case OBS_REDEMPTIONS.CHANGE_OVERLAY_COLOR: {
@@ -35,7 +35,7 @@ export async function handleOBSRedemption(redemptionData: RedemptionData): Promi
         numTimes = 1000;
       }
 
-      Obs.send('SetSourceFilterVisibility', {
+      await Obs.send('SetSourceFilterVisibility', {
         sourceName: SOURCES.WEBCAM,
         filterName: 'Color Correction',
         filterEnabled: true
@@ -43,9 +43,9 @@ export async function handleOBSRedemption(redemptionData: RedemptionData): Promi
 
       const rate = 1000 / numTimes;
       for (let i = 0; i < numTimes; i++) {
-        setTimeout(() => {
+        setTimeout(async () => {
           const randomColor = (Math.random() * 4294967296) >>> 0;
-          Obs.send('SetSourceFilterSettings', {
+          await Obs.send('SetSourceFilterSettings', {
             sourceName: SOURCES.WEBCAM,
             filterName: 'Color Correction',
             filterSettings: {
@@ -61,7 +61,7 @@ export async function handleOBSRedemption(redemptionData: RedemptionData): Promi
         item: { name: SOURCES.AQUA }
       });
       const { visible } = properties;
-      Obs.send('SetSceneItemRender', {
+      await Obs.send('SetSceneItemRender', {
         source: SOURCES.AQUA,
         render: !visible
       });

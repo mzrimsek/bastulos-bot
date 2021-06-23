@@ -213,16 +213,16 @@ export async function handleModCommand(commandData: CommandData): Promise<boolea
       return true;
     }
     case `${COMMAND_PREFACE}${OBS_COMMANDS.RESET}`: {
-      Obs.send('SetSourceFilterVisibility', {
+      await Obs.send('SetSourceFilterVisibility', {
         sourceName: SOURCES.WEBCAM,
         filterName: 'Color Correction',
         filterEnabled: false
       });
-      Obs.send('SetSceneItemRender', {
+      await Obs.send('SetSceneItemRender', {
         source: SOURCES.WEBCAM,
         render: true
       });
-      Obs.send('SetMute', { source: SOURCES.MIC, mute: false });
+      await Obs.send('SetMute', { source: SOURCES.MIC, mute: false });
       return true;
     }
     default: {
