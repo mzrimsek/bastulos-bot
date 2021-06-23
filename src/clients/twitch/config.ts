@@ -1,4 +1,4 @@
-import { getEnvValue } from '../utils';
+import { getEnvValue } from '../../utils';
 
 export default {
   channel: getEnvValue('TWITCH_CHANNEL'),

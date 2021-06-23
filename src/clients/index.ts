@@ -15,7 +15,7 @@ export interface AvailableClients {
   Firestore: FirestoreClient;
 }
 
-export const clients: AvailableClients = {
+const clients: AvailableClients = {
   TwitchChat: new TwitchBotChatClient(),
   TwitchPubSub: new TwitchChannelPubSubClient(),
   TwitchApi: new TwitchChannelApiClient(),
@@ -24,3 +24,5 @@ export const clients: AvailableClients = {
   Obs: new ObsClient(),
   Firestore: new FirestoreClient()
 };
+
+export default clients;

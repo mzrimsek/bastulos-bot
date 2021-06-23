@@ -1,7 +1,7 @@
-import { logger, twitchConfig } from '../../config';
-
 import { ChatClient } from 'twitch-chat-client';
 import { getRefreshableAuthProvider } from './helpers';
+import logger from '../../logger';
+import twitchConfig from './config';
 
 export class TwitchBotChatClient {
   private client: ChatClient;

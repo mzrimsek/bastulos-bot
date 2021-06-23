@@ -1,7 +1,7 @@
 import { COMMAND_PREFACE, HELP_COMMAND } from '../constants';
 
 import { CommandData } from '../models';
-import { logger } from '../config';
+import logger from '../logger';
 import { replaceRequestingUserInMessage } from '../utils';
 
 export async function handleUserCommand(
