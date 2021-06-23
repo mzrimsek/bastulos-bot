@@ -11,34 +11,34 @@ import {
   handleTwitchUserCommand,
   handleUserCommand
 } from './commands';
-import { isChannelLive, randomlyPadContent } from './utils';
 
-import { Clients } from './clients';
 import { Message } from 'discord.js';
 import { PubSubRedemptionMessage } from 'twitch-pubsub-client';
+import { clients } from './clients';
 import { handleOBSRedemption } from './redemptions';
+import { randomlyPadContent } from './utils';
 
 let commandsActive = true;
 
-Clients.TwitchChat.onMessage(async (channel: string, user: string, message: string) => {
+clients.TwitchChat.onMessage(async (channel: string, user: string, message: string) => {
   if (user === BOT_NAME) return; // ignore messages from the bot
 
   if (message[0] !== COMMAND_PREFACE) return; // ignore non command messages
 
   const searchableChannel = channel.replace('#', '');
-  const channelIsLive = await isChannelLive(apiClient, searchableChannel);
+  const channelIsLive = await clients.TwitchApi.isChannelLive(searchableChannel);
 
   if (!channelIsLive) {
     logger.info('Stream offline - command ignored');
     return;
   }
 
-  const mods = await Clients.TwitchChat.getMods(channel);
+  const mods = await clients.TwitchChat.getMods(channel);
 
   const messageParts = message.split(' ');
   const username = `@${user}`;
   const printFunc = (content: string) =>
-    Clients.TwitchChat.say(channel, randomlyPadContent(content));
+    clients.TwitchChat.say(channel, randomlyPadContent(content));
   const commandsActiveUpdateFunc = (newState: boolean) => {
     commandsActive = newState;
   };
@@ -57,7 +57,7 @@ Clients.TwitchChat.onMessage(async (channel: string, user: string, message: stri
     }
 
     if (user === ADMIN_USER || mods.includes(user)) {
-      if (await handleModCommand(commandData, obsConnected)) return;
+      if (await handleModCommand(commandData)) return;
     }
 
     if (!commandsActive) return;
@@ -70,7 +70,7 @@ Clients.TwitchChat.onMessage(async (channel: string, user: string, message: stri
   }
 });
 
-Clients.TwitchPubSub.onRedemption(async (message: PubSubRedemptionMessage) => {
+clients.TwitchPubSub.onRedemption(async (message: PubSubRedemptionMessage) => {
   logger.info(`${message.rewardName} redeemed by ${message.userName}`);
 
   const redemptionData: RedemptionData = {
@@ -79,13 +79,13 @@ Clients.TwitchPubSub.onRedemption(async (message: PubSubRedemptionMessage) => {
   };
 
   try {
-    if (await handleOBSRedemption(redemptionData, obsConnected)) return;
+    if (await handleOBSRedemption(redemptionData)) return;
   } catch (error) {
     logger.error(error);
   }
 });
 
-Clients.Discord.onMessage(async (message: Message) => {
+clients.Discord.onMessage(async (message: Message) => {
   const member = await message.guild?.members.fetch(message.author);
   const isBastulosBot = member?.id === discordConfig.bot_user_id;
   const { content } = message;

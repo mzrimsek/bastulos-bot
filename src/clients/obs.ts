@@ -23,10 +23,10 @@ export class ObsClient {
   async send(
     actionType: ObsActionType,
     actionSettings: ObsActionArgs[ObsActionType]
-  ): Promise<void> {
+  ): Promise<any> {
     if (!this.obsConnected) {
       await this.client.connect(obsConfig);
     }
-    this.client.send(actionType, actionSettings);
+    return this.client.send(actionType, actionSettings);
   }
 }

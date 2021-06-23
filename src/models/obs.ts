@@ -3,9 +3,10 @@ export type ObsActionType =
   | 'SetSceneItemRender'
   | 'SetSourceFilterVisibility'
   | 'SetSourceFilterSettings'
-  | 'ToggleMute';
+  | 'ToggleMute'
+  | 'SetMute';
 
-export interface ObsActionArgs extends Record<string, any> {
+export interface ObsActionArgs extends Record<ObsActionType, any> {
   GetSceneItemProperties: {
     item: {
       name: string;
@@ -26,10 +27,15 @@ export interface ObsActionArgs extends Record<string, any> {
   SetSourceFilterSettings: {
     sourceName: string;
     filterName: string;
-    filterSettings: Record<string, string>;
+    filterSettings: Record<string, string | number | boolean>;
   };
 
   ToggleMute: {
     source: string;
+  };
+
+  SetMute: {
+    source: string;
+    mute: boolean;
   };
 }

@@ -21,6 +21,7 @@ export class TwitchChannelPubSubClient {
 
       this.client = new PubSubClient();
       this.userId = await this.client.registerUserListener(apiClient);
+
       logger.info('Twitch PubSub Client Initialized');
     }
     return this.client;
