@@ -5,7 +5,7 @@ import { logger, mqttConfig } from '../config';
 export class MqttClient {
   private client: mqtt.MqttClient | null = null;
 
-  async getClient(): Promise<mqtt.MqttClient> {
+  private async getClient(): Promise<mqtt.MqttClient> {
     if (!this.client) {
       this.client = mqtt.connect(`tcp://${mqttConfig.address}`);
       this.client.on('connect', () => {
@@ -13,5 +13,10 @@ export class MqttClient {
       });
     }
     return this.client;
+  }
+
+  async publish(topic: string, message: string): Promise<void> {
+    const client = await this.getClient();
+    client.publish(topic, message);
   }
 }
