@@ -1,8 +1,7 @@
 import * as OBSWebSocket from 'obs-websocket-js';
 
+import { ObsActionArgs, ObsActionType } from '../models';
 import { logger, obsConfig } from '../config';
-
-import { ObsActionType } from '../models';
 
 export class ObsClient {
   private client: OBSWebSocket | null = null;
@@ -24,7 +23,10 @@ export class ObsClient {
     return this.client;
   }
 
-  async send(actionType: ObsActionType, actionSettings: Record<string, any>) {
+  async send(
+    actionType: ObsActionType,
+    actionSettings: ObsActionArgs[ObsActionType]
+  ): Promise<void> {
     const client = await this.getClient();
 
     if (!this.obsConnected) {
