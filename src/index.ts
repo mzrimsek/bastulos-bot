@@ -33,8 +33,6 @@ clients.TwitchChat.onMessage(async (channel: string, user: string, message: stri
     return;
   }
 
-  const mods = await clients.TwitchChat.getMods(channel);
-
   const messageParts = message.split(' ');
   const username = `@${user}`;
   const printFunc = (content: string) =>
