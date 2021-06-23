@@ -3,7 +3,6 @@ require('dotenv').config();
 
 import { ADMIN_USER, BOT_NAME, COMMAND_PREFACE, LIGHT_COMMANDS, OBS_COMMANDS } from './constants';
 import { CommandData, RedemptionData } from './models';
-import { discordConfig, logger } from './config';
 import {
   handleAdminCommand,
   handleHelpCommand,
@@ -16,6 +15,7 @@ import { Message } from 'discord.js';
 import { PubSubRedemptionMessage } from 'twitch-pubsub-client';
 import { clients } from './clients';
 import { handleOBSRedemption } from './redemptions';
+import { logger } from './config';
 import { randomlyPadContent } from './utils';
 
 let commandsActive = true;
@@ -87,7 +87,7 @@ clients.TwitchPubSub.onRedemption(async (message: PubSubRedemptionMessage) => {
 
 clients.Discord.onMessage(async (message: Message) => {
   const member = await message.guild?.members.fetch(message.author);
-  const isBastulosBot = member?.id === discordConfig.bot_user_id;
+  const isBastulosBot = member?.id === clients.Discord.getBotUserId();
   const { content } = message;
 
   if (isBastulosBot) return; // ignore messages from the bot
