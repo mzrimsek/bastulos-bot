@@ -1,16 +1,14 @@
 import {
   ADMIN_COMMANDS,
-  COMMANDS_COLLECTION,
   COMMAND_PREFACE,
   LIGHT_COMMANDS,
   LIGHT_TOPICS,
   OBS_COMMANDS,
   SOURCES,
-  WORD_TRACKING_COLLECTION,
   WORD_TRACKING_COMMANDS
 } from '../constants';
-import { Command, CommandData, TrackedWord } from '../models';
 
+import { CommandData } from '../models';
 import { getRandomInt } from '../utils';
 import { logger } from '../config';
 
@@ -41,7 +39,7 @@ export async function handleAdminCommand(
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.ADD_COMMAND}`: {
       const newCommand = messageParts[1];
       const newMessage = messageParts.slice(2).join(' ');
-      Firestore.getCollection<Command>(COMMANDS_COLLECTION)
+      Firestore.getCommandsCollection()
         .doc(newCommand)
         .set({
           command: newCommand,
@@ -52,7 +50,7 @@ export async function handleAdminCommand(
     }
     case `${COMMAND_PREFACE}${ADMIN_COMMANDS.REMOVE_COMMAND}`: {
       const commandToRemove = messageParts[1];
-      Firestore.getCollection<Command>(COMMANDS_COLLECTION)
+      Firestore.getCommandsCollection()
         .doc(commandToRemove)
         .delete()
         .then(() => logger.info(`Command removed: ${commandToRemove}`));
@@ -81,8 +79,7 @@ export async function handleTwitchUserCommand(
 
       const targetPhrase = messageParts.slice(1).join('_');
       if (targetPhrase && trackingPhrases.includes(targetPhrase)) {
-        const documentRef =
-          Firestore.getCollection<TrackedWord>(WORD_TRACKING_COLLECTION).doc(targetPhrase);
+        const documentRef = Firestore.getTrackedWordsCollection().doc(targetPhrase);
         const document = await documentRef.get();
         const currentCount = document.get('count');
         printFunc(`${username}, ${targetPhrase} count is ${currentCount}`);
@@ -158,7 +155,7 @@ export async function handleModCommand(commandData: CommandData): Promise<boolea
 
       const newPhrase = messageParts.slice(1).join('_');
       if (newPhrase && !trackingPhrases.includes(newPhrase)) {
-        Firestore.getCollection<TrackedWord>(WORD_TRACKING_COLLECTION)
+        Firestore.getTrackedWordsCollection()
           .doc(newPhrase)
           .set({
             count: 0
@@ -172,7 +169,7 @@ export async function handleModCommand(commandData: CommandData): Promise<boolea
 
       const phraseToRemove = messageParts.slice(1).join('_');
       if (phraseToRemove && trackingPhrases.includes(phraseToRemove)) {
-        Firestore.getCollection<TrackedWord>(WORD_TRACKING_COLLECTION)
+        Firestore.getTrackedWordsCollection()
           .doc(phraseToRemove)
           .delete()
           .then(() => logger.info(`Tracking word removed: ${phraseToRemove}`));
@@ -184,7 +181,7 @@ export async function handleModCommand(commandData: CommandData): Promise<boolea
 
       const phraseToClear = messageParts.slice(1).join('_');
       if (phraseToClear && trackingPhrases.includes(phraseToClear)) {
-        Firestore.getCollection<TrackedWord>(WORD_TRACKING_COLLECTION)
+        Firestore.getTrackedWordsCollection()
           .doc(phraseToClear)
           .update('count', 0)
           .then(() => logger.info(`Tracking word cleared: ${phraseToClear}`));
@@ -206,8 +203,7 @@ export async function handleModCommand(commandData: CommandData): Promise<boolea
       const phraseToIncrement = phraseParts.join('_');
 
       if (phraseToIncrement && trackingPhrases.includes(phraseToIncrement)) {
-        const documentRef =
-          Firestore.getCollection<TrackedWord>(WORD_TRACKING_COLLECTION).doc(phraseToIncrement);
+        const documentRef = Firestore.getTrackedWordsCollection().doc(phraseToIncrement);
         const document = await documentRef.get();
         const currentCount: number = document.get('count');
         documentRef

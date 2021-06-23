@@ -27,7 +27,9 @@ export class FirestoreClient {
     logger.info('Connected to Firestore');
   }
 
-  getCollection<DataType>(collection: string): admin.firestore.CollectionReference<DataType> {
+  private getCollection<DataType>(
+    collection: string
+  ): admin.firestore.CollectionReference<DataType> {
     const converter: FirebaseFirestore.FirestoreDataConverter<DataType> = {
       toFirestore(concreteType: DataType): FirebaseFirestore.DocumentData {
         return concreteType;
@@ -41,8 +43,16 @@ export class FirestoreClient {
     return this.client.collection(collection).withConverter(converter);
   }
 
+  getCommandsCollection(): admin.firestore.CollectionReference<Command> {
+    return this.getCollection<Command>(COMMANDS_COLLECTION);
+  }
+
+  getTrackedWordsCollection(): admin.firestore.CollectionReference<TrackedWord> {
+    return this.getCollection<TrackedWord>(WORD_TRACKING_COLLECTION);
+  }
+
   async loadUserCommands(): Promise<Command[]> {
-    const commandsSnapshot = await this.getCollection<Command>(COMMANDS_COLLECTION).get();
+    const commandsSnapshot = await this.getCommandsCollection().get();
     logger.info('User commands loaded');
     return commandsSnapshot.docs.map((doc: admin.firestore.QueryDocumentSnapshot<Command>) =>
       doc.data()
@@ -50,7 +60,7 @@ export class FirestoreClient {
   }
 
   async loadTrackingPhrases(): Promise<string[]> {
-    const wordsSnapshot = await this.getCollection<TrackedWord>(WORD_TRACKING_COLLECTION).get();
+    const wordsSnapshot = await this.getTrackedWordsCollection().get();
     logger.info('Tracking words loaded');
     return wordsSnapshot.docs.map(
       (doc: admin.firestore.QueryDocumentSnapshot<TrackedWord>) => doc.id
