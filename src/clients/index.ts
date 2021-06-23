@@ -1,6 +1,7 @@
 import { TwitchBotChatClient, TwitchChannelPubSubClient } from './twitch';
 
 import { DiscordClient } from './discord';
+import { FirestoreClient } from './firebase';
 import { MqttClient } from './mqtt';
 import { ObsClient } from './obs';
 
@@ -11,5 +12,6 @@ export const Clients = {
   TwitchPubSub: new TwitchChannelPubSubClient(),
   Discord: new DiscordClient(),
   Mqtt: new MqttClient(),
-  Obs: new ObsClient()
+  Obs: new ObsClient(),
+  Firestore: new FirestoreClient()
 };
