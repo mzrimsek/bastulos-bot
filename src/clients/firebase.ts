@@ -1,13 +1,13 @@
 import * as admin from 'firebase-admin';
 
 import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from '../constants';
-import { Command, FirestoreCollection, FirestoreData, TrackedWord } from '../models';
+import { Command, TrackedWord } from '../models';
 import { firebaseConfig, logger } from '../config';
 
 export class FirestoreClient {
-  private client: FirestoreData | null = null;
+  private client: FirebaseFirestore.Firestore;
 
-  private getFirestore(): FirebaseFirestore.Firestore {
+  constructor() {
     const firestoreSettings = {
       timestampsInSnapshots: true
     };
@@ -21,15 +21,13 @@ export class FirestoreClient {
       databaseURL: firebaseConfig.database_url
     });
 
-    const firestore: FirebaseFirestore.Firestore = admin.firestore();
-    firestore.settings(firestoreSettings);
-    return firestore;
+    this.client = admin.firestore();
+    this.client.settings(firestoreSettings);
+
+    logger.info('Connected to Firestore');
   }
 
-  private getCollection<DataType>(
-    firestore: FirebaseFirestore.Firestore,
-    collection: string
-  ): FirestoreCollection<DataType> {
+  getCollection<DataType>(collection: string): admin.firestore.CollectionReference<DataType> {
     const converter: FirebaseFirestore.FirestoreDataConverter<DataType> = {
       toFirestore(concreteType: DataType): FirebaseFirestore.DocumentData {
         return concreteType;
@@ -40,27 +38,22 @@ export class FirestoreClient {
       }
     };
 
-    return firestore.collection(collection).withConverter(converter);
+    return this.client.collection(collection).withConverter(converter);
   }
 
-  async getClient(): Promise<FirestoreData> {
-    if (!this.client) {
-      const firestore = this.getFirestore();
-      logger.info('Connected to Firestore');
+  async loadUserCommands(): Promise<Command[]> {
+    const commandsSnapshot = await this.getCollection<Command>(COMMANDS_COLLECTION).get();
+    logger.info('User commands loaded');
+    return commandsSnapshot.docs.map((doc: admin.firestore.QueryDocumentSnapshot<Command>) =>
+      doc.data()
+    );
+  }
 
-      const commandsCollection = this.getCollection<Command>(firestore, COMMANDS_COLLECTION);
-      const trackingWordsCollection = this.getCollection<TrackedWord>(
-        firestore,
-        WORD_TRACKING_COLLECTION
-      );
-
-      const collections = { commandsCollection, trackingWordsCollection };
-
-      this.client = {
-        firestore,
-        collections
-      };
-    }
-    return this.client;
+  async loadTrackingPhrases(): Promise<string[]> {
+    const wordsSnapshot = await this.getCollection<TrackedWord>(WORD_TRACKING_COLLECTION).get();
+    logger.info('Tracking words loaded');
+    return wordsSnapshot.docs.map(
+      (doc: admin.firestore.QueryDocumentSnapshot<TrackedWord>) => doc.id
+    );
   }
 }

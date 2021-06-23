@@ -4,40 +4,34 @@ import { ChatClient } from 'twitch-chat-client';
 import { getRefreshableAuthProvider } from './helpers';
 
 export class TwitchBotChatClient {
-  private client: ChatClient | null = null;
+  private client: ChatClient;
 
-  private async getClient(): Promise<ChatClient> {
-    if (!this.client) {
-      const { channel, botClientId, botClientSecret, botTokensLocation } = twitchConfig;
+  constructor() {
+    const { channel, botClientId, botClientSecret, botTokensLocation } = twitchConfig;
 
-      const botAuthProvider = getRefreshableAuthProvider(
-        botClientId,
-        botClientSecret,
-        botTokensLocation
-      );
-      this.client = new ChatClient(botAuthProvider, {
-        channels: [channel]
-      });
-      this.client.connect();
-      this.client.onConnect(() => logger.info('Connected to Twitch Chat'));
-    }
-    return this.client;
+    const botAuthProvider = getRefreshableAuthProvider(
+      botClientId,
+      botClientSecret,
+      botTokensLocation
+    );
+    this.client = new ChatClient(botAuthProvider, {
+      channels: [channel]
+    });
+    this.client.connect();
+    this.client.onConnect(() => logger.info('Connected to Twitch Chat'));
   }
 
   async onMessage(
     messageHandler: (channel: string, user: string, message: string) => void
   ): Promise<void> {
-    const client = await this.getClient();
-    client.onMessage(messageHandler);
+    this.client.onMessage(messageHandler);
   }
 
   async say(channel: string, message: string): Promise<void> {
-    const client = await this.getClient();
-    client.say(channel, message);
+    this.client.say(channel, message);
   }
 
   async getMods(channel: string): Promise<string[]> {
-    const client = await this.getClient();
-    return client.getMods(channel);
+    return this.client.getMods(channel);
   }
 }
