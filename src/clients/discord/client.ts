@@ -1,5 +1,7 @@
 import { Client, Message } from 'discord.js';
-import { discordConfig, logger } from '../config';
+
+import discordConfig from './config';
+import { logger } from '../../config';
 
 export class DiscordClient {
   private client: Client;

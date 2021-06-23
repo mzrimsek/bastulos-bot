@@ -1,8 +1,9 @@
 import { PubSubClient, PubSubRedemptionMessage } from 'twitch-pubsub-client';
-import { logger, twitchConfig } from '../../config';
 
 import { ApiClient } from 'twitch';
 import { getRefreshableAuthProvider } from './helpers';
+import { logger } from '../../config';
+import twitchConfig from './config';
 
 export class TwitchChannelPubSubClient {
   private client: PubSubClient | null = null;

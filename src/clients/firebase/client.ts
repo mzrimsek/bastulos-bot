@@ -1,8 +1,10 @@
 import * as admin from 'firebase-admin';
 
-import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from '../constants';
-import { Command, TrackedWord } from '../models';
-import { firebaseConfig, logger } from '../config';
+import { COMMANDS_COLLECTION, WORD_TRACKING_COLLECTION } from '../../constants';
+import { Command, TrackedWord } from '../../models';
+
+import firebaseConfig from './config';
+import { logger } from '../../config';
 
 export class FirestoreClient {
   private client: FirebaseFirestore.Firestore;
