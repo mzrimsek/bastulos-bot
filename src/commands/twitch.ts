@@ -10,7 +10,7 @@ import {
 
 import { CommandData } from '../models';
 import { getRandomInt } from '../utils';
-import { logger } from '../config';
+import logger from '../logger';
 
 export async function handleAdminCommand(
   commandData: CommandData,

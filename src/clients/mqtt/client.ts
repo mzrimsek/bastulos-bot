@@ -1,6 +1,6 @@
 import * as mqtt from 'mqtt';
 
-import { logger } from '../../config';
+import logger from '../../logger';
 import mqttConfig from './config';
 
 export class MqttClient {

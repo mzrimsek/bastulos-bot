@@ -1,6 +1,6 @@
 import { ApiClient } from 'twitch';
 import { getRefreshableAuthProvider } from './helpers';
-import { logger } from '../../config';
+import logger from '../../logger';
 import twitchConfig from './config';
 
 export class TwitchChannelApiClient {

@@ -2,7 +2,7 @@ import * as OBSWebSocket from 'obs-websocket-js';
 
 import { ObsActionArgs, ObsActionType } from '../../models';
 
-import { logger } from '../../config';
+import logger from '../../logger';
 import obsConfig from './config';
 
 export class ObsClient {
