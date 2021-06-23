@@ -1,12 +1,5 @@
 import { COMMAND_SPACER } from '../constants';
 
-// Deleting this breaks the bot even though it is not used
-// Trying to import it in the OBS redemptions file seems to
-//  break importing and I have literally no idea why :(
-export function getRandomColor(): number {
-  return (Math.random() * 4294967296) >>> 0;
-}
-
 export function getRandomInt(max: number, offset = 0): number {
   return Math.floor(Math.random() * max) + offset;
 }
