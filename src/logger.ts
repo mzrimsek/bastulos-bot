@@ -9,7 +9,11 @@ const logger = createLogger({
     }),
     prettyPrint(),
     colorize({ level: true }),
-    printf(info => `[${info.level}] ${info.timestamp} - ${info.message}`)
+    printf(info => {
+      const messageNeedsStringified = typeof info.message === 'object';
+      const message = messageNeedsStringified ? JSON.stringify(info.message) : info.message;
+      return `[${info.level}] ${info.timestamp} - ${message}`;
+    })
   ),
   transports: [new transports.Console()]
 });
