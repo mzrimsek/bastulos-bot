@@ -51,6 +51,10 @@ Authentication is done using the [Twitch OAuth Authorization Code Flow](https://
 [This basic walkthrough](https://d-fischer.github.io/twitch-chat-client/docs/examples/basic-bot.html) explains the process, as well as how to get refreshing tokens obtained for the twitch-chat-client library. Currently tokens are just stored in a JSON file which is read from/written to when obtaining and refreshing access tokens.
 For local development the `botTokens.json` file is read in using the `TWITCH_BOT_TOKENS_FILE_LOCATION` environment variable and the `channelTokens.json` file is read in using the `TWITCH_CHANNEL_TOKENS_FILE_LOCATION` environment variable. When running from Docker, a directory containing the `botTokens.json` and `channelTokens.json` files must be mounted as a volume to the `/var/bot` directory.
 
+### Notes
+
+* Failure to connect to Twitch chat and respond to commands means the channel tokens need refreshed manually
+
 ## Invite to Discord Server
 
 https://discord.com/api/oauth2/authorize?client_id=772707347520946197&permissions=0&scope=bot
