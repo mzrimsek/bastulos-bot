@@ -1,7 +1,6 @@
-import OBSWebSocket from 'obs-websocket-js';
-
 import { ObsActionArgs, ObsActionType } from '../../models';
 
+import OBSWebSocket from 'obs-websocket-js';
 import logger from '../../logger';
 import obsConfig from './config';
 
