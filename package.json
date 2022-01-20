@@ -17,7 +17,7 @@
     "dotenv": "~10.0.0",
     "firebase-admin": "~9.9.0",
     "mqtt": "~4.2.6",
-    "obs-websocket-js": "~4.0.2",
+    "obs-websocket-js": "4.0.2",
     "twitch": "~4.5.5",
     "twitch-auth": "~4.5.5",
     "twitch-chat-client": "~4.5.5",
