@@ -1,4 +1,4 @@
-import * as OBSWebSocket from 'obs-websocket-js';
+import OBSWebSocket from 'obs-websocket-js';
 
 import { ObsActionArgs, ObsActionType } from '../../models';
 
