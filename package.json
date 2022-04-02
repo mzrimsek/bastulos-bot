@@ -16,25 +16,24 @@
     "discord.js": "~12.5.3",
     "dotenv": "~10.0.0",
     "firebase-admin": "~9.9.0",
-    "mqtt": "~4.2.6",
+    "mqtt": "^4.2.8",
     "obs-websocket-js": "4.0.2",
     "twitch": "~4.5.5",
     "twitch-auth": "~4.5.5",
     "twitch-chat-client": "~4.5.5",
     "twitch-pubsub-client": "~4.5.5",
-    "winston": "~3.3.3"
+    "winston": "^3.3.4"
   },
   "devDependencies": {
-    "@types/node": "^15.12.2",
-    "@types/ws": "^7.4.4",
-    "@typescript-eslint/eslint-plugin": "^4.27.0",
-    "@typescript-eslint/parser": "^4.27.0",
-    "eslint": "^7.28.0",
-    "eslint-config-prettier": "^8.3.0",
+    "@types/node": "^15.14.9",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.5.0",
     "import-sort-style-eslint": "^6.0.0",
     "prettier": "2.3.1",
     "prettier-plugin-import-sort": "0.0.7",
-    "ts-node-dev": "^1.1.6",
-    "typescript": "^4.3.2"
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.6.3"
   }
 }
