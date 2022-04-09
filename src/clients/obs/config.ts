@@ -1,6 +1,9 @@
 import { getEnvValue } from '../../utils';
 
 export default {
-  address: getEnvValue('OBS_URL'),
-  password: getEnvValue('OBS_PASSWORD')
+  client: {
+    address: getEnvValue('OBS_URL'),
+    password: getEnvValue('OBS_PASSWORD'),
+  },
+  enabled: getEnvValue('OBS_ENABLED') === 'true'
 };
