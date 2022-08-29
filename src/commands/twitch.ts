@@ -87,12 +87,12 @@ export async function handleTwitchUserCommand(
       return true;
     }
     case `${COMMAND_PREFACE}${LIGHT_COMMANDS.TURN_OFF}`: {
-      Mqtt.publish(LIGHT_TOPICS.office.on_off, 'off');
+      Mqtt.publish(LIGHT_TOPICS.office.off, 'off');
       printFunc(`${username} turned off the lights!`);
       return true;
     }
     case `${COMMAND_PREFACE}${LIGHT_COMMANDS.TURN_ON}`: {
-      Mqtt.publish(LIGHT_TOPICS.office.on_off, 'on');
+      Mqtt.publish(LIGHT_TOPICS.office.on, 'on');
       printFunc(`${username} turned on the lights!`);
       return true;
     }

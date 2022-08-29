@@ -1,7 +1,8 @@
 export const LIGHT_TOPICS = {
   office: {
-    on_off: 'lights/office',
-    named_color: 'lights/office/color/name',
-    rgb_color: 'lights/office/color/rgb'
+    on: 'home/office/lights/on',
+    off: 'home/office/lights/off',
+    named_color: 'home/office/lights/color/name',
+    rgb_color: 'home/office/lights/color/rgb'
   }
 };
